@@ -37,13 +37,14 @@ FILE* Report;
 // In main() functions
 int ReadArguments( int argc, char* argv[]);
 void PrepareServer();
-void MainLoop();
+void MainLoop( int Tempo );
 
 // Usage Functions
-int FillProduceBuffer( struct BufferChar );
+int FillProduceBuffer( struct BufferChar, int LastIdx );
 void PlaceIntoPollTable( int ClientFd );
 int CreateAcceptSocket();
-FILE* OpenFileToWrite();
+struct sockaddr_in AcceptAndPlaceInPollTab( int socketFd );
+void OpenFileToWrite();
 
 // Time Functions
 int CreateTimer( int clockid );
@@ -52,6 +53,7 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 void SleepMe( int Tempo );
 
 // Usage Functions
+void WriteReport( FILE* OutputFile, char* ClientAddress, int TotalClients, int ReportType );
 void PrintUsage();
 
 
@@ -173,6 +175,8 @@ void PrepareServer()
         //AllDescriptors[TIM_REP] = TimerReport;
 	PollTable[TIM_REP].fd = TimerReport;
 	PollTable[TIM_REP].events = POLLIN;
+
+    OpenFileToWrite();
 }
 
 int CreateAcceptSocket()
@@ -203,7 +207,7 @@ int CreateAcceptSocket()
     return sock_fd;
 }
 
-int AcceptClient( int socketFd )
+struct sockaddr_in AcceptAndPlaceInPollTab( int socketFd )
 {
     //Kod odpowiedzialny za powstanie nowego socketu do klienta.
     struct sockaddr_in Client;
@@ -213,7 +217,7 @@ int AcceptClient( int socketFd )
        ERROR("New client acceptance error. ");	
     
     PlaceIntoPollTable( Client_fd );
-    return Client_fd;
+    return Client;
 }
 
 void PlaceIntoPollTable( int ClientFd )
@@ -227,49 +231,82 @@ void PlaceIntoPollTable( int ClientFd )
 	//realloc
     
     PollTable[idx] = Client;
+    TotalClients++;
     idx++;
 }
 
-FILE* OpenFileToWrite()
+void OpenFileToWrite()
 {
-    FILE* Output = fopen("ServerReport", "a");
+    FILE* Output = fopen( Path, "a");
     if( !Output )
 	ERROR("Filed to open/create report file. ");
 
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    fprintf( Output, "\n----- Server start running %d.%d.%d at %d:%d:%d. ----- \n", tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);    
-    
-    return Output;
+    fprintf( Output, "\n----- Server start running %d.%d.%d at %d:%d:%d. ----- \n", tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+ 
+    Report = Output;   
 }
 
 
-void MainLoop()
+void MainLoop( int Tempo )
 {
-    //Utworzenie Buforu Pomocniczego dla wysyłki.
+    //Utworzenie Buforu Pomocniczego 
     char* TempBuffer = (char*)calloc(128000/sizeof(char), sizeof(char));
+    char* fd_buffer = (char*)calloc(8, sizeof(char));
 
     //Wystartowanie zegara produkcyjnego
+    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
+    SetTimer( 5, PollTable[TIM_REP].fd );
     
+    int jobs = 0;
+    int LastIdx = 0;
     while( 1 )
     {
 	// Poll na wszystkich deskrypotrach
-	
+	if( !jobs )
+	jobs = poll( PollTable, sizeof(PollTable)/sizeof(*PollTable), -1);	
+    	
 	// Sprawdzenie zegara produkcja
-	    //Ewentualna produkcja
+	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
+	{
+	    if( !jobs ) return;
+
+	    LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
+	    jobs--; 
+	} 
 	
 	//Sprawdzenie Nadejscia nowego polczenia
-	    //Ewentualna obsluga nowego polaczenia
+	if( read( PollTable[ACC_SOCK].fd, fd_buffer, 4) > 0 )
+	{
+	    if( !jobs ) return;
+
+	    struct sockaddr_in newClient = AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
+	    jobs--;
+	}
 	
 	//Sprawdzenie zegara raport
-	    //Ewentualny raport
+	 if( read( PollTable[TIM_REP].fd, fd_buffer, 4) > 0 )
+	{
+	    if( !jobs ) return;
+	    
+	    WriteReport( Report, NULL, TotalClients, 3);
+	    jobs--;
+	}
 	
 	//Sprawdzenie deskryptorów Klientów
-	//Jesli zwroci wartosc fd to wpisanie do listy wysylkowej.
-	
-	//Wyslanie danych do fd pierwszego klienta z listy. 
+	unsigned long i = 3;
+	while( jobs && (i < sizeof(PollTable)/sizeof(*PollTable)) )
+	{
+	    if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
+	       pushInt(ToSendBuffer, PollTable[i].fd);
+	    
+	    i++;	    
+	}
 
+	//Wyslanie danych do fd pierwszego klienta z listy. 
+		
     }
 }
 
@@ -335,7 +372,7 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
 	ERROR("clock_gettime() error. ");
 }
 
-void WriteReport( FILE* OutputFile, char* ClientAddress, int ReportType )
+void WriteReport( FILE* OutputFile, char* ClientAddress, int TotalClients, int ReportType )
 {
     struct timespec TimMonotonic, TimWall;
     CheckTime( &TimMonotonic, CLOCK_MONOTONIC );

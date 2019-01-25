@@ -155,7 +155,19 @@ int ReadArguments( int argc, char* argv[])
 
 void PrepareServer()
 {
+    //Utworzenie kolejki ToSend
+    //Utworzenie Tablicy wsystkoch deskryptorów
+    //Utworzenie Tablicy dla Poll.
+    //Utworzenie Buforu Pomocniczego dla wysyłki.
+    
+    //Utworzenie socketu do połączeń.
+	//Wpisanie fd do tablic AllFd oraz Poll
+	
+    //Utworzenie Zegara Produkcyjnego
+	//Wpisanie fd do tablic AllFd oraz Poll
 
+    //Utworzenie Zegara Raportowego
+	//Wpisanie fd do tablic AllFd oraz Poll
 
 }
 

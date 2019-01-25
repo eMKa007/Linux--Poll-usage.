@@ -41,6 +41,7 @@ void MainLoop( int Tempo );
 
 // Usage Functions
 int FillProduceBuffer( struct BufferChar, int LastIdx );
+int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer); 
 void PlaceIntoPollTable( int ClientFd );
 int CreateAcceptSocket();
 struct sockaddr_in AcceptAndPlaceInPollTab( int socketFd );
@@ -252,7 +253,7 @@ void OpenFileToWrite()
 void MainLoop( int Tempo )
 {
     //Utworzenie Buforu Pomocniczego 
-    char* TempBuffer = (char*)calloc(128000/sizeof(char), sizeof(char));
+    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
     char* fd_buffer = (char*)calloc(8, sizeof(char));
 
     //Wystartowanie zegara produkcyjnego
@@ -305,8 +306,18 @@ void MainLoop( int Tempo )
 	    i++;	    
 	}
 
-	//Wyslanie danych do fd pierwszego klienta z listy. 
-		
+	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
+	if( readToTempBuffer( ProduceBuffer, TempBuffer) == 0 )
+	{
+	    int Client = 0;
+	    if( (Client = popInt( ToSendBuffer )) != 0 )
+	    {
+		//Send to Client
+	    }
+	}
+	//Wyslanie danych do fd pierwszego klienta z listy.
+	
+	
     }
 }
 
@@ -329,6 +340,22 @@ int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
     return 0; 
 } 
 
+int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int LastIdx )
+{
+    unsigned long i = 0;
+    if( !LastIdx )
+	i = LastIdx;
+    
+    while( i < sizeof(TempBuffer)/sizeof(*TempBuffer) )
+    {
+	if( (TempBuffer[i] = popChar( ProduceBuffer ) != '\0' ) )
+		i++;
+	else
+	    return i;
+    }
+
+    return 0;
+}
 
 
 int* CreateSendQueue()

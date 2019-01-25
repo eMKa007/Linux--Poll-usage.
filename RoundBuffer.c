@@ -118,9 +118,9 @@ int pushInt( struct BufferInt InputBuffer, int Input)
 int popInt(struct BufferInt InputBuffer)
 {
     if( isEmptyInt( InputBuffer) )
-	return '\0';
+	return 0;
 
-    char res = InputBuffer.Buffer[InputBuffer.BufferTail++ % InputBuffer.MaxSize ];
+    int res = InputBuffer.Buffer[InputBuffer.BufferTail++ % InputBuffer.MaxSize ];
     InputBuffer.CurrSize--;
     return res;
 }

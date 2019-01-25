@@ -64,7 +64,8 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 void SleepMe( int Tempo );
 
 // Usage Functions
-void WriteReport( FILE* OutputFile, char* ClientAddress, int TotalClients, int ReportType );
+void GenCloseReport( int fd );
+void WriteReport( FILE* OutputFile, in_addr_t ClientAddress, int TotalClients, int ReportType );
 void PrintUsage();
 
 
@@ -237,12 +238,20 @@ void MainLoop( int Tempo )
 	    jobs--;
 	}
 	
-	//Sprawdzenie deskryptorów Klientów
+	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
 	unsigned long i = 3;
 	while( jobs && (i < sizeof(PollTable)/sizeof(*PollTable)) )
 	{
-	    if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
-	       pushInt(ToSendBuffer, PollTable[i].fd);
+	    if( PollTable[i].revents == POLLNVAL )
+	    {
+		GenCloseReport( PollTable[i].fd );
+		jobs--;
+	    }
+	    else if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
+	    {
+ 		pushInt(ToSendBuffer, PollTable[i].fd);
+		jobs--;
+	    }
 	    
 	    i++;	    
 	}
@@ -253,7 +262,7 @@ void MainLoop( int Tempo )
 	    int Client = 0;
 	    if( (Client = popInt( ToSendBuffer )) != 0 )
 	    {
-		//Send to Client
+		//Wysyła dane do klienta. Jednego klienta.
 		int res = 0;
 		if( (res = send( Client, TempBuffer, sizeof(TempBuffer), 0)) == -1)
 		    perror("Error sending message to client. ");
@@ -406,7 +415,18 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
 	ERROR("clock_gettime() error. ");
 }
 
-void WriteReport( FILE* OutputFile, char* ClientAddress, int TotalClients, int ReportType )
+void GenCloseReport( int fd )
+{
+    //Sreach for fd in Clients Table.
+    int i = 0;
+    for( i = 0; i < sizeof(ClientsInfo)/sizeof(*ClientsInfo); i++)
+	if( ClientsInfo[i].ClientFd == fd )
+	    break;
+
+    WriteReport( Report, ClientsInfo[i].Adress.s_addr, TotalClients, 2); 
+
+}
+void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportType )
 {
     struct timespec TimMonotonic, TimWall;
     CheckTime( &TimMonotonic, CLOCK_MONOTONIC );
@@ -418,12 +438,11 @@ void WriteReport( FILE* OutputFile, char* ClientAddress, int TotalClients, int R
     {
 	case 1: 
 	    {
-		fprintf(OutputFile, "New client adress: %s\n", ClientAddress);
+		fprintf(OutputFile, "New client adress: %u\n", ClientsInfo[ClientIdx].Adress.s_addr);
 	    }; break;
 	case 2: 
 	    {
-		fprintf(OutputFile, "Client disconnect: %s.\nTotal data send: %d\n", ClientAddress, 100);
-		//TODO: Send valid value of data send.
+		fprintf(OutputFile, "Client disconnect: %u.\nTotal packages sent: %d\n", ClientsInfo[ClientIdx].Adress.s_addr, ClientsInfo[ClientIdx].PackagesDelivered);
 	    }; break;
 	case 3: 
 	    {

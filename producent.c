@@ -32,7 +32,7 @@ struct ClientStr
 
 // Global Variables
 char Path[80] = {0};
-char Addr[80] = "localhost";
+char Addr[80] = "127.0.0.1";
 int port = 0;
 int TotalClients = 0;
 
@@ -150,6 +150,8 @@ int ReadArguments( int argc, char* argv[])
 	    ERROR("Invalid internal argument. ");
 	}
     }
+
+    printf("Input Arguments: -r %s -t %d %s:%d\n", Path, tempo, Addr, port ); 
     return tempo;
 }
 
@@ -194,7 +196,10 @@ void MainLoop( int Tempo )
 {
     //Utworzenie Buforu Pomocniczego 
     char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
-    char* fd_buffer = (char*)calloc(8, sizeof(char));
+    char* fd_buffer = (char*)calloc(120, sizeof(char));
+    if( !TempBuffer || !fd_buffer)
+	ERROR("Memory allocation error. MainLoop(). ");
+
 
     //Wystartowanie zegara produkcyjnego
     SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
@@ -204,54 +209,47 @@ void MainLoop( int Tempo )
     int jobs = 0;
     int LastIdx = 0;
     int TempBufferLastIdx = 0;
+
+    printf("Server started!\n");
     while( 1 )
     {
 	// Poll na wszystkich deskrypotrach
-	if( !jobs )
-	jobs = poll( PollTable, sizeof(PollTable)/sizeof(*PollTable), -1);	
+	    poll( PollTable, TotalClients+3, -1);	
     	
 	// Sprawdzenie zegara produkcja
 	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
 	{
-	    if( !jobs ) return;
-
-	    LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
-	    jobs--; 
+		LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
+		jobs--;
 	} 
 	
 	//Sprawdzenie Nadejscia nowego polczenia
-	if( read( PollTable[ACC_SOCK].fd, fd_buffer, 4) > 0 )
+	if( read( PollTable[ACC_SOCK].fd, fd_buffer, 8) > 0 )
 	{
-	    if( !jobs ) return;
-
-	    AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
-	    jobs--;
+		AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
+		jobs--;
 	}
 	
 	//Sprawdzenie zegara raport
-	if( read( PollTable[TIM_REP].fd, fd_buffer, 4) > 0 )
+	if( read( PollTable[TIM_REP].fd, fd_buffer, 8) > 0 )
 	{
-	    if( !jobs ) return;
-	    
-	    WriteReport( Report, 0, TotalClients, 3);
-	    jobs--;
+		WriteReport( Report, 0, TotalClients, 3);
+		printf("Clock report written.\n");	    
 	}
 	
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
 	unsigned long i = 3;
-	while( jobs && (i < sizeof(PollTable)/sizeof(*PollTable)) )
+	while( i < sizeof(PollTable)/sizeof(*PollTable) )
 	{
 	    if( PollTable[i].revents == POLLNVAL )
 	    {
 		PollTable[i].events = -1;
 		//Client idx in InfoTable is swift by 3 from PollTable.
 		WriteReport( Report, i-3, TotalClients, 2); 
-		jobs--;
 	    }
 	    else if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
 	    {
  		pushInt(ToSendBuffer, PollTable[i].fd);
-		jobs--;
 	    }
 	    
 	    i++;	    
@@ -272,6 +270,7 @@ void MainLoop( int Tempo )
 		memset( TempBuffer, 0, sizeof(TempBuffer)/sizeof(*TempBuffer) );
 	    }
 	}
+	fflush(Report);
     }
 }
 
@@ -318,7 +317,7 @@ void AcceptAndPlaceInPollTab( int socketFd )
 
 void PlaceIntoPollTable( int ClientFd )
 {
-    static int idx = 0;
+    static int idx = 3;
     struct pollfd Client;
     Client.fd = ClientFd;
     Client.events = POLLIN | POLLNVAL;
@@ -327,7 +326,7 @@ void PlaceIntoPollTable( int ClientFd )
     {
 	PollTable = (struct pollfd*)realloc( PollTable, sizeof(PollTable)+sizeof(struct pollfd));	
     }
-    
+     
     PollTable[idx] = Client;
     TotalClients++;
     idx++;
@@ -340,19 +339,22 @@ void PlaceClientInTab( struct sockaddr_in newClient, int ClientFd )
     ClientsInfo[idx].Adress = newClient.sin_addr;
     ClientsInfo[idx].port = newClient.sin_port;
     ClientsInfo[idx].PackagesDelivered = 0;
+
+    WriteReport( Report, idx, TotalClients, 1);
+    idx++;
 } 
 
 void OpenFileToWrite()
 {
-    FILE* Output = fopen( Path, "a");
-    if( !Output )
+    Report = fopen( Path, "a");
+    if( !Report )
 	ERROR("Filed to open/create report file. ");
 
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    fprintf( Output, "\n----- Server start running %d.%d.%d at %d:%d:%d. ----- \n", tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
- 
-    Report = Output;   
+    if( fprintf( Report, "\n----- Server start running %d.%d.%d at %d:%d:%d. ----- \n", 
+		tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) < 0)
+	ERROR("First print error. OpenFileToWrite(). ");
 }
 
 int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
@@ -367,6 +369,7 @@ int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
 	    return i;
 	i++;
     }
+    printf("Buffer filled %dx'A'. \n", i);
     return 0; 
 } 
 
@@ -388,7 +391,7 @@ int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int Last
 
 int CreateTimer( int clockid )
 {
-    int fd = timerfd_create( clockid, TFD_NONBLOCK);
+    int fd = timerfd_create( clockid, 0);
     if( fd == -1 )
 	ERROR("Produce Timer create error. ");
 
@@ -398,13 +401,15 @@ int CreateTimer( int clockid )
 void SetTimer( float intervalInSeconds, int fd )
 {
     struct itimerspec ITimerSpec;
-    struct itimerspec ITimerSpecold;
 
     ITimerSpec.it_interval.tv_sec = (int)intervalInSeconds;
     ITimerSpec.it_interval.tv_nsec = (intervalInSeconds - (int)intervalInSeconds) * 1000000000;
     
+    ITimerSpec.it_value.tv_sec = (int)intervalInSeconds;
+    ITimerSpec.it_value.tv_nsec = (intervalInSeconds - (int)intervalInSeconds) * 1000000000;
+
     int res;
-    if( (res = timerfd_settime( fd, 0, &ITimerSpec, &ITimerSpecold)) == -1)
+    if( (res = timerfd_settime( fd, 0, &ITimerSpec, NULL)) == -1)
 	ERROR("Setting Produce Timer error. ");
 }
 

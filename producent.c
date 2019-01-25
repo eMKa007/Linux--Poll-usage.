@@ -22,6 +22,14 @@
 #define TIM_PROD 1
 #define TIM_REP 2
 
+struct ClientStr
+{
+    int ClientFd;
+    int PackagesDelivered;
+    in_port_t port;
+    struct in_addr Adress;
+};
+
 // Global Variables
 char Path[80] = {0};
 char Addr[80] = "localhost";
@@ -29,6 +37,7 @@ int port = 0;
 int TotalClients = 0;
 
 struct pollfd* PollTable;
+struct ClientStr* ClientsInfo; 
 struct BufferChar ProduceBuffer; 
 struct BufferInt ToSendBuffer; 
 
@@ -42,9 +51,10 @@ void MainLoop( int Tempo );
 // Usage Functions
 int FillProduceBuffer( struct BufferChar, int LastIdx );
 int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int LastIdx );
-void PlaceIntoPollTable( int ClientFd );
 int CreateAcceptSocket();
-struct sockaddr_in AcceptAndPlaceInPollTab( int socketFd );
+void PlaceIntoPollTable( int ClientFd );
+void AcceptAndPlaceInPollTab( int socketFd );
+void PlaceClientInTab( struct sockaddr_in newClient, int ClientFd );
 void OpenFileToWrite();
 
 // Time Functions
@@ -56,7 +66,6 @@ void SleepMe( int Tempo );
 // Usage Functions
 void WriteReport( FILE* OutputFile, char* ClientAddress, int TotalClients, int ReportType );
 void PrintUsage();
-
 
 
 int main( int argc, char* argv[])
@@ -151,8 +160,8 @@ void PrepareServer()
     //Utworzenie kolejki cyklicznej ToSend
     ToSendBuffer = CreateRoundBufferInt(1000);
     
-    //Utworzenie Tablicy wsystkoch deskryptorów
-    //int* AllDescriptors = (int*)calloc(10, sizeof(int));
+    //Utworzenie Tablicy dla informacji o klientach.
+    ClientsInfo = (struct ClientStr*)calloc(10, sizeof(struct ClientStr));
 
     //Utworzenie Tablicy dla Poll.
     PollTable = (struct pollfd*)calloc(4, sizeof(struct pollfd));
@@ -215,7 +224,7 @@ void MainLoop( int Tempo )
 	{
 	    if( !jobs ) return;
 
-	    struct sockaddr_in newClient = AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
+	    AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
 	    jobs--;
 	}
 	
@@ -245,6 +254,12 @@ void MainLoop( int Tempo )
 	    if( (Client = popInt( ToSendBuffer )) != 0 )
 	    {
 		//Send to Client
+		int res = 0;
+		if( (res = send( Client, TempBuffer, sizeof(TempBuffer), 0)) == -1)
+		    perror("Error sending message to client. ");
+		
+		//czyszczenie Bufora.
+		memset( TempBuffer, 0, sizeof(TempBuffer)/sizeof(*TempBuffer) );
 	    }
 	}
     }
@@ -278,7 +293,7 @@ int CreateAcceptSocket()
     return sock_fd;
 }
 
-struct sockaddr_in AcceptAndPlaceInPollTab( int socketFd )
+void AcceptAndPlaceInPollTab( int socketFd )
 {
     //Kod odpowiedzialny za powstanie nowego socketu do klienta.
     struct sockaddr_in Client;
@@ -288,7 +303,7 @@ struct sockaddr_in AcceptAndPlaceInPollTab( int socketFd )
        ERROR("New client acceptance error. ");	
     
     PlaceIntoPollTable( Client_fd );
-    return Client;
+    PlaceClientInTab( Client, Client_fd );
 }
 
 void PlaceIntoPollTable( int ClientFd )
@@ -307,6 +322,15 @@ void PlaceIntoPollTable( int ClientFd )
     TotalClients++;
     idx++;
 }
+
+void PlaceClientInTab( struct sockaddr_in newClient, int ClientFd )
+{
+    static int idx = 0;
+    ClientsInfo[idx].ClientFd = ClientFd;
+    ClientsInfo[idx].Adress = newClient.sin_addr;
+    ClientsInfo[idx].port = newClient.sin_port;
+    ClientsInfo[idx].PackagesDelivered = 0;
+} 
 
 void OpenFileToWrite()
 {

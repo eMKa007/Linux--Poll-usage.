@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/timerfd.h>
+#include <poll.h>
 
 #include "RoundBuffer.h"
 
@@ -29,12 +30,13 @@ struct BufferChar ProduceBuffer;
 struct BufferInt ToSendBuffer; 
 
 int ReadArguments( int argc, char* argv[]);
-void PrepareServer();
+void PrepareServer(int Tempo);
 void MainLoop();
 void FillBuffer( struct Buffer );
 
 
-int CreateAndSetTimer( float intervalInSeconds );
+int CreateTimer( float intervalInSeconds );
+void SetTimer( float intervalInSeconds );
 void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 void SleepMe( int Tempo );
 void PrintUsage();
@@ -155,7 +157,7 @@ int ReadArguments( int argc, char* argv[])
     return tempo;
 }
 
-void PrepareServer()
+void PrepareServer( int Tempo )
 {
     ProduceBuffer = CreateRoundBufferChar(1250000/sizeof(char)); 
 
@@ -175,9 +177,11 @@ void PrepareServer()
 	//Wpisanie fd do tablic AllFd oraz Poll
 	
     //Utworzenie Zegara Produkcyjnego
+    int TimerProd = CreateTimer( Tempo*60/96.f );
 	//Wpisanie fd do tablic AllFd oraz Poll
 
     //Utworzenie Zegara Raportowego
+    int TimerReport = CreateTimer( 5 );
 	//Wpisanie fd do tablic AllFd oraz Poll
 
 }
@@ -187,6 +191,7 @@ void MainLoop()
 {
     //Wystartowanie zegara produkcyjnego
     //Wystartowanie zegara raportowego
+    
     while( 1 )
     {
 	// Poll na wszystkich deskrypotrach
@@ -271,12 +276,17 @@ struct pollfd* CreatePollTable()
     return NULL;
 }
 
-int CreateAndSetTimer( float intervalInSeconds )
+int CreateTimer()
 {
     int fd = timerfd_create( CLOCK_REALTIME, TFD_NONBLOCK);
     if( fd == -1 )
 	ERROR("Produce Timer create error. ");
 
+    return fd;
+}
+
+void SetTimer( float intervalInSeconds )
+{
     struct itimerspec ITimerSpec;
     struct itimerspec ITimerSpecold;
 
@@ -286,8 +296,6 @@ int CreateAndSetTimer( float intervalInSeconds )
     int res;
     if( (res = timerfd_settime( fd, 0, &ITimerSpec, &ITimerSpecold)) == -1)
 	ERROR("Setting Produce Timer error. ");
-
-    return fd;
 }
 
 void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )

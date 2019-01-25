@@ -20,6 +20,10 @@
     exit(-1);\
 }while(0)
 
+#define ACC_SOCK 0
+#define TIM_PROD 1
+#define TIM_REP 2
+
 
 char Path[80] = {0};
 char Addr[80] = "localhost";
@@ -31,6 +35,8 @@ struct BufferInt ToSendBuffer;
 
 int ReadArguments( int argc, char* argv[]);
 void PrepareServer(int Tempo);
+void CreateAcceptSocket();
+
 void MainLoop();
 void FillBuffer( struct Buffer );
 
@@ -174,16 +180,22 @@ void PrepareServer( int Tempo )
     char* TempBuffer = (char*)calloc(128000/sizeof(char), sizeof(char));
     
     //Utworzenie socketu do połączeń.
-	//Wpisanie fd do tablic AllFd oraz Poll
+    int AccSock = CreateAcceptSocket();
+    //Wpisanie fd do tablic AllFd oraz Poll
 	
     //Utworzenie Zegara Produkcyjnego
     int TimerProd = CreateTimer( Tempo*60/96.f );
 	//Wpisanie fd do tablic AllFd oraz Poll
+	AllDescriptors[TIM_PROD] = TimerProd;
+	PollTable[TIM_PROD].fd = TimerProd;
+	PollTable[TIM_PROD].events = POLLIN;
 
     //Utworzenie Zegara Raportowego
     int TimerReport = CreateTimer( 5 );
 	//Wpisanie fd do tablic AllFd oraz Poll
-
+        AllDescriptors[TIM_REP] = TimerReport;
+	PollTable[TIM_REP].fd = TimerReport;
+	PollTable[TIM_REP].events = POLLIN;
 }
 
 
@@ -212,7 +224,6 @@ void MainLoop()
 
     }
 }
-
 
 void FillBuffer( struct Buffer FillBuffer )
 {

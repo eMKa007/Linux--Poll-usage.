@@ -24,6 +24,8 @@ int port = 0;
 int TotalClients = 0;
 
 int ReadArguments( int argc, char* argv[]);
+void PrepareServer();
+void MainLoop();
 void FillBuffer( struct Buffer );
 
 
@@ -150,6 +152,40 @@ int ReadArguments( int argc, char* argv[])
     }
     return tempo;
 }
+
+void PrepareServer()
+{
+
+
+}
+
+
+void MainLoop()
+{
+
+    while( 1 )
+    {
+	// Poll na wszystkich deskrypotrach
+	
+	// Sprawdzenie zegara produkcja
+	    //Ewentualna produkcja
+	
+	//Sprawdzenie Nadejscia nowego polczenia
+	    //Ewentualna obsluga nowego polaczenia
+	
+	//Sprawdzenie zegara raport
+	    //Ewentualny raport
+	
+	//Sprawdzenie deskryptorów Klientów
+	//Jesli zwroci wartosc fd to wpisanie do listy wysylkowej.
+	
+	//Wyslanie danych do fd pierwszego klienta z listy. 
+
+    }
+
+
+}
+
 
 void FillBuffer( struct Buffer FillBuffer )
 {

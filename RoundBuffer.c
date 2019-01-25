@@ -1,11 +1,11 @@
 #include "RoundBuffer.h"
 
-struct Buffer CreateRoundBuffer()
+struct BufferChar CreateRoundBufferChar( int Size )
 {
-   struct Buffer RoundBuffer;
+   struct BufferChar RoundBuffer;
    RoundBuffer.BufferHead = 0;
    RoundBuffer.BufferTail = 0;
-   RoundBuffer.MaxSize = 1250000/sizeof(char);
+   RoundBuffer.MaxSize = Size;
    RoundBuffer.CurrSize = 0;
    RoundBuffer.Buffer = (char*)calloc(RoundBuffer.MaxSize, sizeof(char));
    if( !RoundBuffer.Buffer )
@@ -17,14 +17,14 @@ struct Buffer CreateRoundBuffer()
    return RoundBuffer;
 }
 
-int push( struct Buffer InputBuffer, char Input)
+int pushChar( struct BufferChar InputBuffer, char Input)
 {
     if( InputBuffer.CurrSize == InputBuffer.MaxSize )
     {
 	return 0;
     }
     
-    if( isEmpty( InputBuffer ) )
+    if( isEmptyChar( InputBuffer ) )
 	    InputBuffer.Buffer[ InputBuffer.BufferHead ] = Input;
     else
     {
@@ -36,9 +36,9 @@ int push( struct Buffer InputBuffer, char Input)
     return 1;
 }
 
-char pop(struct Buffer InputBuffer)
+char popChar(struct BufferChar InputBuffer)
 {
-    if( isEmpty( InputBuffer) )
+    if( isEmptyChar( InputBuffer) )
 	return '\0';
 
     char res = InputBuffer.Buffer[InputBuffer.BufferTail++ % InputBuffer.MaxSize ];
@@ -46,23 +46,23 @@ char pop(struct Buffer InputBuffer)
     return res;
 }
 
-char tail( struct Buffer InputBuffer )
+char tailChar( struct BufferChar InputBuffer )
 { 
-    if( isEmpty( InputBuffer) )
+    if( isEmptyChar( InputBuffer) )
 	return '\0';
     
     return InputBuffer.Buffer[InputBuffer.BufferTail];
 }
 
-char head( struct Buffer InputBuffer )
+char headChar( struct BufferChar InputBuffer )
 { 
-    if( isEmpty( InputBuffer) )
+    if( isEmptyChar( InputBuffer) )
 	return '\0';
     
     return InputBuffer.Buffer[InputBuffer.BufferHead];
 }
 
-char at( struct Buffer InputBuffer, int position)
+char atChar( struct BufferChar InputBuffer, int position)
 {
     if( position > InputBuffer.MaxSize )
 	return '\0';
@@ -70,7 +70,86 @@ char at( struct Buffer InputBuffer, int position)
     return InputBuffer.Buffer[position];
 }
 
-int isEmpty( struct Buffer InputBuffer)
+int isEmptyChar( struct BufferChar InputBuffer)
+{
+    if( InputBuffer.CurrSize == 0 )
+	return 1;
+    else 
+	return 0;
+}
+
+//-----------Round Buffer INT  
+struct BufferInt CreateRoundBufferInt( int Size )
+{
+   struct BufferInt RoundBuffer;
+   RoundBuffer.BufferHead = 0;
+   RoundBuffer.BufferTail = 0;
+   RoundBuffer.MaxSize = Size;
+   RoundBuffer.CurrSize = 0;
+   RoundBuffer.Buffer = (int*)calloc(RoundBuffer.MaxSize, sizeof(int));
+   if( !RoundBuffer.Buffer )
+   {
+	perror("Buffer allocation error. ");
+	exit(-1);
+   }
+
+   return RoundBuffer;
+}
+
+int pushInt( struct BufferInt InputBuffer, int Input)
+{
+    if( InputBuffer.CurrSize == InputBuffer.MaxSize )
+    {
+	return 0;
+    }
+    
+    if( isEmptyInt( InputBuffer ) )
+	    InputBuffer.Buffer[ InputBuffer.BufferHead ] = Input;
+    else
+    {
+        InputBuffer.BufferHead = ++InputBuffer.BufferHead % InputBuffer.MaxSize;
+	InputBuffer.Buffer[InputBuffer.BufferHead] = Input; 
+    }
+
+    InputBuffer.CurrSize++;
+    return 1;
+}
+
+int popInt(struct BufferInt InputBuffer)
+{
+    if( isEmptyInt( InputBuffer) )
+	return '\0';
+
+    char res = InputBuffer.Buffer[InputBuffer.BufferTail++ % InputBuffer.MaxSize ];
+    InputBuffer.CurrSize--;
+    return res;
+}
+
+int tailInt( struct BufferInt InputBuffer )
+{ 
+    if( isEmptyInt( InputBuffer) )
+	return '\0';
+    
+    return InputBuffer.Buffer[InputBuffer.BufferTail];
+}
+
+int headInt( struct BufferInt InputBuffer )
+{ 
+    if( isEmptyInt( InputBuffer) )
+	return '\0';
+    
+    return InputBuffer.Buffer[InputBuffer.BufferHead];
+}
+
+int atInt( struct BufferInt InputBuffer, int position)
+{
+    if( position > InputBuffer.MaxSize )
+	return '\0';
+
+    return InputBuffer.Buffer[position];
+}
+
+int isEmptyInt( struct BufferInt InputBuffer)
 {
     if( InputBuffer.CurrSize == 0 )
 	return 1;

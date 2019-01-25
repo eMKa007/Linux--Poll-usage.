@@ -10,7 +10,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/timerfd.h>
+
 #include "RoundBuffer.h"
+
 
 #define ERROR(x) do{\
     perror(x);\
@@ -22,6 +24,9 @@ char Path[80] = {0};
 char Addr[80] = "localhost";
 int port = 0;
 int TotalClients = 0;
+
+struct BufferChar ProduceBuffer; 
+struct BufferInt ToSendBuffer; 
 
 int ReadArguments( int argc, char* argv[]);
 void PrepareServer();
@@ -40,9 +45,6 @@ int* SendQueue;	    //Need to be changed to round buffer.
 int main( int argc, char* argv[])
 {
     int Tempo = ReadArguments(argc, argv);
-    struct Buffer RoundBuffer = CreateRoundBuffer();
-    
-    
      
     
     
@@ -155,10 +157,19 @@ int ReadArguments( int argc, char* argv[])
 
 void PrepareServer()
 {
-    //Utworzenie kolejki ToSend
+    ProduceBuffer = CreateRoundBufferChar(1250000/sizeof(char)); 
+
+    //Utworzenie kolejki cyklicznej ToSend
+    ToSendBuffer = CreateRoundBufferInt(1000);
+    
     //Utworzenie Tablicy wsystkoch deskryptorów
+    int* AllDescriptors = (int*)calloc(10, sizeof(int));
+
     //Utworzenie Tablicy dla Poll.
+    struct pollfd* PollTable = (struct pollfd*)calloc(4, sizeof(struct pollfd));
+    
     //Utworzenie Buforu Pomocniczego dla wysyłki.
+    char* TempBuffer = (char*)calloc(128000/sizeof(char), sizeof(char));
     
     //Utworzenie socketu do połączeń.
 	//Wpisanie fd do tablic AllFd oraz Poll
@@ -174,7 +185,8 @@ void PrepareServer()
 
 void MainLoop()
 {
-
+    //Wystartowanie zegara produkcyjnego
+    //Wystartowanie zegara raportowego
     while( 1 )
     {
 	// Poll na wszystkich deskrypotrach
@@ -194,8 +206,6 @@ void MainLoop()
 	//Wyslanie danych do fd pierwszego klienta z listy. 
 
     }
-
-
 }
 
 

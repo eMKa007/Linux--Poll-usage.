@@ -64,8 +64,7 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 void SleepMe( int Tempo );
 
 // Usage Functions
-void GenCloseReport( int fd );
-void WriteReport( FILE* OutputFile, in_addr_t ClientAddress, int TotalClients, int ReportType );
+void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportType );
 void PrintUsage();
 
 
@@ -234,7 +233,7 @@ void MainLoop( int Tempo )
 	{
 	    if( !jobs ) return;
 	    
-	    WriteReport( Report, NULL, TotalClients, 3);
+	    WriteReport( Report, 0, TotalClients, 3);
 	    jobs--;
 	}
 	
@@ -244,7 +243,9 @@ void MainLoop( int Tempo )
 	{
 	    if( PollTable[i].revents == POLLNVAL )
 	    {
-		GenCloseReport( PollTable[i].fd );
+		PollTable[i].events = -1;
+		//Client idx in InfoTable is swift by 3 from PollTable.
+		WriteReport( Report, i-3, TotalClients, 2); 
 		jobs--;
 	    }
 	    else if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
@@ -320,7 +321,7 @@ void PlaceIntoPollTable( int ClientFd )
     static int idx = 0;
     struct pollfd Client;
     Client.fd = ClientFd;
-    Client.events = POLLIN;
+    Client.events = POLLIN | POLLNVAL;
 
     if( idx == sizeof(PollTable)/sizeof(*PollTable) )
     {
@@ -382,7 +383,6 @@ int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int Last
 	else
 	    return i;
     }
-
     return 0;
 }
 
@@ -415,17 +415,6 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
 	ERROR("clock_gettime() error. ");
 }
 
-void GenCloseReport( int fd )
-{
-    //Sreach for fd in Clients Table.
-    int i = 0;
-    for( i = 0; i < sizeof(ClientsInfo)/sizeof(*ClientsInfo); i++)
-	if( ClientsInfo[i].ClientFd == fd )
-	    break;
-
-    WriteReport( Report, ClientsInfo[i].Adress.s_addr, TotalClients, 2); 
-
-}
 void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportType )
 {
     struct timespec TimMonotonic, TimWall;

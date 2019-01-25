@@ -29,16 +29,18 @@ char Path[80] = {0};
 char Addr[80] = "localhost";
 int port = 0;
 int TotalClients = 0;
+struct pollfd* PollTable;
 
 struct BufferChar ProduceBuffer; 
 struct BufferInt ToSendBuffer; 
 
 int ReadArguments( int argc, char* argv[]);
 void PrepareServer(int Tempo);
-void CreateAcceptSocket();
+int CreateAcceptSocket();
+void PlaceIntoPollTable( int ClientFd );
 
 void MainLoop();
-void FillBuffer( struct Buffer );
+int FillProduceBuffer( struct BufferChar );
 
 
 int CreateTimer( float intervalInSeconds );
@@ -57,38 +59,7 @@ int main( int argc, char* argv[])
     
     
     
-    // --------------   Wyniesc do innych funkcji!!!
-    //Utworzenie gniazda..
-    int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if( sock_fd  == -1 )
-    {
-	ERROR("Socket initialise error. ");
-    }
-    
-    //Zarejetrowanie Lokalizacji/Adresu
-    struct sockaddr_in Addres;
-    Addres.sin_family = AF_INET;
-    Addres.sin_port = htons(port);  
-    
-    int r;
-    if( (r = inet_aton(Addr, &Addres.sin_addr)) == 0 )
-      ERROR("Internet routine manipulation fail.. ");	
-
-    if( (r = bind( sock_fd, (struct sockaddr*)&Addres, sizeof(Addres) ) ) == -1 )
-	ERROR("Socket bind error. ");
-
-    //Zmiana Trybu na pasywny
-    if( (r = listen( sock_fd, 50)) == -1)	    //Up to 50 clients.
-	ERROR("Change to passive socket error. ");
-     
-    //Oczekiwanie na polaczenie i akceptacja.
-    struct sockaddr_in Client;
-    socklen_t ClientLen;
-    int Client_fd;
-    if( (Client_fd = accept(sock_fd, (struct sockaddr*)&Client, &ClientLen)) == -1)
-       ERROR("New client acceptance error. ");	
-
-    //Realizacja usługi zapis.odczyt informacji. 
+        //Realizacja usługi zapis.odczyt informacji. 
     //read(); write();
     //ssize_t recv(int sockfd, void* buf, size_t len, int flags);
     //ssize_t send(int sockfd, void* buf, size_t len, int flags);
@@ -171,36 +142,93 @@ void PrepareServer( int Tempo )
     ToSendBuffer = CreateRoundBufferInt(1000);
     
     //Utworzenie Tablicy wsystkoch deskryptorów
-    int* AllDescriptors = (int*)calloc(10, sizeof(int));
+    //int* AllDescriptors = (int*)calloc(10, sizeof(int));
 
     //Utworzenie Tablicy dla Poll.
-    struct pollfd* PollTable = (struct pollfd*)calloc(4, sizeof(struct pollfd));
+    PollTable = (struct pollfd*)calloc(4, sizeof(struct pollfd));
     
-    //Utworzenie Buforu Pomocniczego dla wysyłki.
-    char* TempBuffer = (char*)calloc(128000/sizeof(char), sizeof(char));
-    
-    //Utworzenie socketu do połączeń.
+        //Utworzenie socketu do połączeń.
     int AccSock = CreateAcceptSocket();
-    //Wpisanie fd do tablic AllFd oraz Poll
+	//Wpisanie fd do tablic AllFd oraz Poll
+	//AllDescriptors[ACC_SOCK] = AccSock;
+	PollTable[ACC_SOCK].fd = AccSock;
+	PollTable[ACC_SOCK].events = POLLIN;
 	
     //Utworzenie Zegara Produkcyjnego
     int TimerProd = CreateTimer( Tempo*60/96.f );
 	//Wpisanie fd do tablic AllFd oraz Poll
-	AllDescriptors[TIM_PROD] = TimerProd;
+	//AllDescriptors[TIM_PROD] = TimerProd;
 	PollTable[TIM_PROD].fd = TimerProd;
 	PollTable[TIM_PROD].events = POLLIN;
 
     //Utworzenie Zegara Raportowego
     int TimerReport = CreateTimer( 5 );
 	//Wpisanie fd do tablic AllFd oraz Poll
-        AllDescriptors[TIM_REP] = TimerReport;
+        //AllDescriptors[TIM_REP] = TimerReport;
 	PollTable[TIM_REP].fd = TimerReport;
 	PollTable[TIM_REP].events = POLLIN;
 }
 
+int CreateAcceptSocket()
+{
+    //Utworzenie gniazda..
+    int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if( sock_fd  == -1 )
+    {
+	ERROR("Socket initialise error. ");
+    }
+    
+    //Zarejetrowanie Lokalizacji/Adresu
+    struct sockaddr_in Addres;
+    Addres.sin_family = AF_INET;
+    Addres.sin_port = htons(port);  
+    
+    int r;
+    if( (r = inet_aton(Addr, &Addres.sin_addr)) == 0 )
+      ERROR("Internet routine manipulation fail.. ");	
+
+    if( (r = bind( sock_fd, (struct sockaddr*)&Addres, sizeof(Addres) ) ) == -1 )
+	ERROR("Socket bind error. ");
+
+    //Zmiana Trybu na pasywny
+    if( (r = listen( sock_fd, 50)) == -1)	    //Up to 50 clients.
+	ERROR("Change to passive socket error. ");
+     
+    return sock_fd;
+}
+
+int AcceptClient( int socketFd )
+{
+    //Kod odpowiedzialny za powstanie nowego socketu do klienta.
+    struct sockaddr_in Client;
+    socklen_t ClientLen;
+    int Client_fd;
+    if( (Client_fd = accept( socketFd, (struct sockaddr*)&Client, &ClientLen)) == -1)
+       ERROR("New client acceptance error. ");	
+    
+    PlaceIntoPollTable( Client_fd );
+    return Client_fd;
+}
+
+void PlaceIntoPollTable( int ClientFd )
+{
+    static int idx = 0;
+    struct pollfd Client;
+    Client.fd = ClientFd;
+    Client.events = POLLIN;
+
+    if( idx == sizeof(PollTable)/sizeof(*PollTable) )
+	//realloc
+    
+    PollTable[idx] = Client;
+    idx++;
+}
 
 void MainLoop()
 {
+    //Utworzenie Buforu Pomocniczego dla wysyłki.
+    char* TempBuffer = (char*)calloc(128000/sizeof(char), sizeof(char));
+
     //Wystartowanie zegara produkcyjnego
     //Wystartowanie zegara raportowego
     
@@ -225,26 +253,23 @@ void MainLoop()
     }
 }
 
-void FillBuffer( struct Buffer FillBuffer )
+int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
 {
-    char* TempTable = (char*)calloc(160, sizeof(char));
-    
-    while ( 1 )
-    {	
-	int i = 0;
-        memset( TempTable, 69, 160); 
+    int i = 0;
+    if( LastIdx )
+	i = LastIdx;
 
-	while( i < 160 )
+    while( i < 160 )	//640 bytes
+    {
+	if( pushChar( FillBuffer, 'A'  ) == 0 )
 	{
-	    while( push( FillBuffer, TempTable[i] ) == 0 )
-	    {
-		//Wait...  Change it!.
-	    }
-	    
-	    i++;
+	    return i;
 	}
-	printf("%10s\n", TempTable);
+	
+	i++;
     }
+
+    return 0; 
 } 
 
 void WriteReport( FILE* OutputFile, char* ClientAddress, int ReportType )
@@ -296,7 +321,7 @@ int CreateTimer()
     return fd;
 }
 
-void SetTimer( float intervalInSeconds )
+void SetTimer( float intervalInSeconds, int fd )
 {
     struct itimerspec ITimerSpec;
     struct itimerspec ITimerSpecold;

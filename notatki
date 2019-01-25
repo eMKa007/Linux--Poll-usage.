@@ -1,0 +1,99 @@
+1. Utworzenie gniazda.
+2. Zarejestrownaie lokalizacji/adresu- poinformowanie systemu, że jeśli przyjdzie komunikat na dany adres to..
+3. Zmiana trybu na pasywny
+4. Oczekiwanie na połączenie/akceptacja połączenia
+	powstaje nowe gniazdo.
+5. Realizacja usługi
+	odczyt/zapis informacji (read/write)
+6. Zamknięcie połączenia.
+
+utworzenie gniazad 
+	include sys/socket.h
+	int socket()
+	
+	Socket domain/ Adress family
+	AF_UNIX, AF_LOCAL
+	AF_INET, AF_INET6 
+
+	Socket type:
+	SOCK_STREAM
+	SOCK_DGRAM
+
+	Parametr protocol- najczęściej ustawiany na 0.
+	
+	int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if( sock_fd == -1 ) {}
+
+2. Zarejestrowanie lokalizacji/adresu
+	int bind( int sockfd, const struct sockaaddr* addr, socklen_t addrlen);
+	2 parametr. ogolna struktura udająca adres? 
+	
+	AF_INET 	struct sockaddr_in
+	AD_INET6	struct sockaddr_in6
+	AF_UNIX		struct sockaddr_ux
+	
+	include netinet/in.h
+	struct sockaddr_in
+	{
+		sa_family_t sin_family;
+		in_port_t sin_port;  		//2 bajtowa liczba calkowita
+		struct in_addr sin_addr;	//adres ip zapisana jako liczba 4 bajtowa. 
+	}
+	
+	A.sin_port = htons(Port) // zmienia inna htonl. Liczbe określająca port zamieniam na bajty	
+
+	struct sockaddr_in A = 
+		{AF_INET, 12345, inet_addr("127.0.0.1")};
+	inet_addr - nie zalecane. Nie wiemy czy podany adres jest poprawny. 
+	
+	int r = inet_aton( "adres", &GdzieMaByćZapisany);
+
+	bind( sock_fd, struct sockaddr* l_addr [Tutaj ma być &A, zrzutowany na tą struct],
+			sizeof(struct A))
+
+	if ( bind() == -1) {...}
+
+3. Zamiana na  tryb pasywny
+	
+	int listen( int sockfd, int backlog); 
+
+	if( listen(...) == -1) { }
+
+4. Oczekiwanie na połączenie i akceptacja
+	
+	int accept ( int sockfd, struct sockaddr* addr, socklen_t* addrlen);
+							//Gdzie jest miejsce aby zapisac adres klienta. 
+
+	struct sockaddr_in B;
+	socklen_t Blen = sizeof()
+	int net_fd = accept(sock_fd, (struct sockaddr*) &B, &Blen);
+	
+	if( new_fd == -1) {...}
+	
+	inet_ntoa() zamienia networ to ascii. 
+
+5. realizacja usługi odczyt zapis informacji.
+
+	read() / write()
+
+	ssize_t recv(int sockfd, void* buf, size_t len, int flags);
+	ssize_t send(int sockfd, void* buf, size_t len, int flags);
+	
+	//Sprawdzenie bledu.
+
+6. Zamknięcie połączenia
+
+	int close (int fd );
+
+	include sys/socket.h
+	int shutdown(int sockfd, int how);  
+	//zamyka kierunek komunikacji. informacja trafia do drugiej strony
+		SHUT_RD, SHUT_WR, SHUT_RDWR
+
+//--------------------------------------------
+
+
+Klient robi connect. W parametrze podaje się adres.
+
+Klient-Serwer
+	Jeden i drugi wypisuje z kim się połączył. 

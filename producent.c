@@ -32,6 +32,8 @@ struct pollfd* PollTable;
 struct BufferChar ProduceBuffer; 
 struct BufferInt ToSendBuffer; 
 
+FILE* Report;
+
 // In main() functions
 int ReadArguments( int argc, char* argv[]);
 void PrepareServer();
@@ -41,6 +43,7 @@ void MainLoop();
 int FillProduceBuffer( struct BufferChar );
 void PlaceIntoPollTable( int ClientFd );
 int CreateAcceptSocket();
+FILE* OpenFileToWrite();
 
 // Time Functions
 int CreateTimer( int clockid );
@@ -69,6 +72,8 @@ int main( int argc, char* argv[])
     //int close( int fd );
     //int shutdown( int sockfd, int how) - inf trafia do drugiej strony.
     
+
+    fclose( Report );    
     return 0;
 }
 
@@ -224,6 +229,20 @@ void PlaceIntoPollTable( int ClientFd )
     PollTable[idx] = Client;
     idx++;
 }
+
+FILE* OpenFileToWrite()
+{
+    FILE* Output = fopen("ServerReport", "a");
+    if( !Output )
+	ERROR("Filed to open/create report file. ");
+
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    fprintf( Output, "\n----- Server start running %d.%d.%d at %d:%d:%d. ----- \n", tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);    
+    
+    return Output;
+}
+
 
 void MainLoop()
 {

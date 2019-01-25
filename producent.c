@@ -41,7 +41,7 @@ void MainLoop( int Tempo );
 
 // Usage Functions
 int FillProduceBuffer( struct BufferChar, int LastIdx );
-int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer); 
+int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int LastIdx );
 void PlaceIntoPollTable( int ClientFd );
 int CreateAcceptSocket();
 struct sockaddr_in AcceptAndPlaceInPollTab( int socketFd );
@@ -62,11 +62,12 @@ void PrintUsage();
 int main( int argc, char* argv[])
 {
     int Tempo = ReadArguments(argc, argv);
-     
+    PrepareServer();
+    MainLoop( Tempo ); 
     
     
     
-        //Realizacja usługi zapis.odczyt informacji. 
+    //Realizacja usługi zapis.odczyt informacji. 
     //read(); write();
     //ssize_t recv(int sockfd, void* buf, size_t len, int flags);
     //ssize_t send(int sockfd, void* buf, size_t len, int flags);
@@ -156,7 +157,7 @@ void PrepareServer()
     //Utworzenie Tablicy dla Poll.
     PollTable = (struct pollfd*)calloc(4, sizeof(struct pollfd));
     
-        //Utworzenie socketu do połączeń.
+    //Utworzenie socketu do połączeń.
     int AccSock = CreateAcceptSocket();
 	//Wpisanie fd do tablic AllFd oraz Poll
 	//AllDescriptors[ACC_SOCK] = AccSock;
@@ -178,6 +179,75 @@ void PrepareServer()
 	PollTable[TIM_REP].events = POLLIN;
 
     OpenFileToWrite();
+}
+
+void MainLoop( int Tempo )
+{
+    //Utworzenie Buforu Pomocniczego 
+    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
+    char* fd_buffer = (char*)calloc(8, sizeof(char));
+
+    //Wystartowanie zegara produkcyjnego
+    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
+    //Wystartowanie zegara raportowego
+    SetTimer( 5, PollTable[TIM_REP].fd );
+    
+    int jobs = 0;
+    int LastIdx = 0;
+    int TempBufferLastIdx = 0;
+    while( 1 )
+    {
+	// Poll na wszystkich deskrypotrach
+	if( !jobs )
+	jobs = poll( PollTable, sizeof(PollTable)/sizeof(*PollTable), -1);	
+    	
+	// Sprawdzenie zegara produkcja
+	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
+	{
+	    if( !jobs ) return;
+
+	    LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
+	    jobs--; 
+	} 
+	
+	//Sprawdzenie Nadejscia nowego polczenia
+	if( read( PollTable[ACC_SOCK].fd, fd_buffer, 4) > 0 )
+	{
+	    if( !jobs ) return;
+
+	    struct sockaddr_in newClient = AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
+	    jobs--;
+	}
+	
+	//Sprawdzenie zegara raport
+	if( read( PollTable[TIM_REP].fd, fd_buffer, 4) > 0 )
+	{
+	    if( !jobs ) return;
+	    
+	    WriteReport( Report, NULL, TotalClients, 3);
+	    jobs--;
+	}
+	
+	//Sprawdzenie deskryptorów Klientów
+	unsigned long i = 3;
+	while( jobs && (i < sizeof(PollTable)/sizeof(*PollTable)) )
+	{
+	    if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
+	       pushInt(ToSendBuffer, PollTable[i].fd);
+	    
+	    i++;	    
+	}
+
+	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
+	if( ( TempBufferLastIdx = readToTempBuffer( ProduceBuffer, TempBuffer, TempBufferLastIdx)) == 0 )
+	{
+	    int Client = 0;
+	    if( (Client = popInt( ToSendBuffer )) != 0 )
+	    {
+		//Send to Client
+	    }
+	}
+    }
 }
 
 int CreateAcceptSocket()
@@ -229,7 +299,9 @@ void PlaceIntoPollTable( int ClientFd )
     Client.events = POLLIN;
 
     if( idx == sizeof(PollTable)/sizeof(*PollTable) )
-	//realloc
+    {
+	PollTable = (struct pollfd*)realloc( PollTable, sizeof(PollTable)+sizeof(struct pollfd));	
+    }
     
     PollTable[idx] = Client;
     TotalClients++;
@@ -249,78 +321,6 @@ void OpenFileToWrite()
     Report = Output;   
 }
 
-
-void MainLoop( int Tempo )
-{
-    //Utworzenie Buforu Pomocniczego 
-    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
-    char* fd_buffer = (char*)calloc(8, sizeof(char));
-
-    //Wystartowanie zegara produkcyjnego
-    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
-    //Wystartowanie zegara raportowego
-    SetTimer( 5, PollTable[TIM_REP].fd );
-    
-    int jobs = 0;
-    int LastIdx = 0;
-    while( 1 )
-    {
-	// Poll na wszystkich deskrypotrach
-	if( !jobs )
-	jobs = poll( PollTable, sizeof(PollTable)/sizeof(*PollTable), -1);	
-    	
-	// Sprawdzenie zegara produkcja
-	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
-	{
-	    if( !jobs ) return;
-
-	    LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
-	    jobs--; 
-	} 
-	
-	//Sprawdzenie Nadejscia nowego polczenia
-	if( read( PollTable[ACC_SOCK].fd, fd_buffer, 4) > 0 )
-	{
-	    if( !jobs ) return;
-
-	    struct sockaddr_in newClient = AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
-	    jobs--;
-	}
-	
-	//Sprawdzenie zegara raport
-	 if( read( PollTable[TIM_REP].fd, fd_buffer, 4) > 0 )
-	{
-	    if( !jobs ) return;
-	    
-	    WriteReport( Report, NULL, TotalClients, 3);
-	    jobs--;
-	}
-	
-	//Sprawdzenie deskryptorów Klientów
-	unsigned long i = 3;
-	while( jobs && (i < sizeof(PollTable)/sizeof(*PollTable)) )
-	{
-	    if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
-	       pushInt(ToSendBuffer, PollTable[i].fd);
-	    
-	    i++;	    
-	}
-
-	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
-	if( readToTempBuffer( ProduceBuffer, TempBuffer) == 0 )
-	{
-	    int Client = 0;
-	    if( (Client = popInt( ToSendBuffer )) != 0 )
-	    {
-		//Send to Client
-	    }
-	}
-	//Wyslanie danych do fd pierwszego klienta z listy.
-	
-	
-    }
-}
-
 int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
 {
     int i = 0;
@@ -330,13 +330,9 @@ int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
     while( i < 160 )	//640 bytes
     {
 	if( pushChar( FillBuffer, 'A'  ) == 0 )
-	{
 	    return i;
-	}
-	
 	i++;
     }
-
     return 0; 
 } 
 
@@ -355,19 +351,6 @@ int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int Last
     }
 
     return 0;
-}
-
-
-int* CreateSendQueue()
-{
-
-    return NULL;
-}
-
-struct pollfd* CreatePollTable()
-{
-    
-    return NULL;
 }
 
 int CreateTimer( int clockid )

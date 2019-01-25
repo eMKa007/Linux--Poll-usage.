@@ -73,18 +73,6 @@ int main( int argc, char* argv[])
     int Tempo = ReadArguments(argc, argv);
     PrepareServer();
     MainLoop( Tempo ); 
-    
-    
-    
-    //Realizacja usługi zapis.odczyt informacji. 
-    //read(); write();
-    //ssize_t recv(int sockfd, void* buf, size_t len, int flags);
-    //ssize_t send(int sockfd, void* buf, size_t len, int flags);
-    
-    //Zamkniecie polaczenia
-    //int close( int fd );
-    //int shutdown( int sockfd, int how) - inf trafia do drugiej strony.
-    
 
     fclose( Report );    
     return 0;
@@ -170,22 +158,16 @@ void PrepareServer()
     
     //Utworzenie socketu do połączeń.
     int AccSock = CreateAcceptSocket();
-	//Wpisanie fd do tablic AllFd oraz Poll
-	//AllDescriptors[ACC_SOCK] = AccSock;
 	PollTable[ACC_SOCK].fd = AccSock;
 	PollTable[ACC_SOCK].events = POLLIN;
 	
     //Utworzenie Zegara Produkcyjnego
     int TimerProd = CreateTimer( CLOCK_REALTIME );
-	//Wpisanie fd do tablic AllFd oraz Poll
-	//AllDescriptors[TIM_PROD] = TimerProd;
 	PollTable[TIM_PROD].fd = TimerProd;
 	PollTable[TIM_PROD].events = POLLIN;
 
     //Utworzenie Zegara Raportowego
     int TimerReport = CreateTimer( CLOCK_REALTIME );
-	//Wpisanie fd do tablic AllFd oraz Poll
-        //AllDescriptors[TIM_REP] = TimerReport;
 	PollTable[TIM_REP].fd = TimerReport;
 	PollTable[TIM_REP].events = POLLIN;
 
@@ -210,8 +192,12 @@ void MainLoop( int Tempo )
     int LastIdx = 0;
     int TempBufferLastIdx = 0;
 
-    printf("Server started!\n");
-    while( 1 )
+    printf("Server started!, press any key to quit.\n");
+    struct pollfd Temp;
+    Temp.fd = STDIN_FILENO;
+    Temp.events = POLLIN;
+
+    while( poll( &Temp, 1, 0 ) == 0 )
     {
 	// Poll na wszystkich deskrypotrach
 	    poll( PollTable, TotalClients+3, -1);	
@@ -272,6 +258,13 @@ void MainLoop( int Tempo )
 	}
 	fflush(Report);
     }
+
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    if( fprintf( Report, "\n----- Server ends work: %d.%d.%d at %d:%d:%d. ----- \n", 
+		tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) < 0)
+	ERROR("First print error. OpenFileToWrite(). ");
+
 }
 
 int CreateAcceptSocket()

@@ -1,4 +1,3 @@
-//vim set sts=4 sw=4:
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -14,7 +13,6 @@
 
 #include "RoundBuffer.h"
 
-
 #define ERROR(x) do{\
     perror(x);\
     exit(-1);\
@@ -24,33 +22,36 @@
 #define TIM_PROD 1
 #define TIM_REP 2
 
-
+// Global Variables
 char Path[80] = {0};
 char Addr[80] = "localhost";
 int port = 0;
 int TotalClients = 0;
-struct pollfd* PollTable;
 
+struct pollfd* PollTable;
 struct BufferChar ProduceBuffer; 
 struct BufferInt ToSendBuffer; 
 
+// In main() functions
 int ReadArguments( int argc, char* argv[]);
-void PrepareServer(int Tempo);
-int CreateAcceptSocket();
-void PlaceIntoPollTable( int ClientFd );
-
+void PrepareServer();
 void MainLoop();
+
+// Usage Functions
 int FillProduceBuffer( struct BufferChar );
+void PlaceIntoPollTable( int ClientFd );
+int CreateAcceptSocket();
 
-
-int CreateTimer( float intervalInSeconds );
-void SetTimer( float intervalInSeconds );
+// Time Functions
+int CreateTimer( int clockid );
+void SetTimer( float intervalInSeconds, int TimerFD );
 void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 void SleepMe( int Tempo );
+
+// Usage Functions
 void PrintUsage();
 
-struct pollfd* DescriptorTable;
-int* SendQueue;	    //Need to be changed to round buffer. 
+
 
 int main( int argc, char* argv[])
 {
@@ -134,7 +135,7 @@ int ReadArguments( int argc, char* argv[])
     return tempo;
 }
 
-void PrepareServer( int Tempo )
+void PrepareServer()
 {
     ProduceBuffer = CreateRoundBufferChar(1250000/sizeof(char)); 
 
@@ -155,14 +156,14 @@ void PrepareServer( int Tempo )
 	PollTable[ACC_SOCK].events = POLLIN;
 	
     //Utworzenie Zegara Produkcyjnego
-    int TimerProd = CreateTimer( Tempo*60/96.f );
+    int TimerProd = CreateTimer( CLOCK_REALTIME );
 	//Wpisanie fd do tablic AllFd oraz Poll
 	//AllDescriptors[TIM_PROD] = TimerProd;
 	PollTable[TIM_PROD].fd = TimerProd;
 	PollTable[TIM_PROD].events = POLLIN;
 
     //Utworzenie Zegara Raportowego
-    int TimerReport = CreateTimer( 5 );
+    int TimerReport = CreateTimer( CLOCK_REALTIME );
 	//Wpisanie fd do tablic AllFd oraz Poll
         //AllDescriptors[TIM_REP] = TimerReport;
 	PollTable[TIM_REP].fd = TimerReport;
@@ -272,6 +273,49 @@ int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
     return 0; 
 } 
 
+
+
+int* CreateSendQueue()
+{
+
+    return NULL;
+}
+
+struct pollfd* CreatePollTable()
+{
+    
+    return NULL;
+}
+
+int CreateTimer( int clockid )
+{
+    int fd = timerfd_create( clockid, TFD_NONBLOCK);
+    if( fd == -1 )
+	ERROR("Produce Timer create error. ");
+
+    return fd;
+}
+
+void SetTimer( float intervalInSeconds, int fd )
+{
+    struct itimerspec ITimerSpec;
+    struct itimerspec ITimerSpecold;
+
+    ITimerSpec.it_interval.tv_sec = (int)intervalInSeconds;
+    ITimerSpec.it_interval.tv_nsec = (intervalInSeconds - (int)intervalInSeconds) * 1000000000;
+    
+    int res;
+    if( (res = timerfd_settime( fd, 0, &ITimerSpec, &ITimerSpecold)) == -1)
+	ERROR("Setting Produce Timer error. ");
+}
+
+void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
+{
+    int res = 0;
+    if( ( res = clock_gettime( ClockType, TimeStructure) ) == -1 )
+	ERROR("clock_gettime() error. ");
+}
+
 void WriteReport( FILE* OutputFile, char* ClientAddress, int ReportType )
 {
     struct timespec TimMonotonic, TimWall;
@@ -300,47 +344,6 @@ void WriteReport( FILE* OutputFile, char* ClientAddress, int ReportType )
     fprintf(OutputFile, "\n====================\n");
 }
 
-int* CreateSendQueue()
-{
-
-    return NULL;
-}
-
-struct pollfd* CreatePollTable()
-{
-    
-    return NULL;
-}
-
-int CreateTimer()
-{
-    int fd = timerfd_create( CLOCK_REALTIME, TFD_NONBLOCK);
-    if( fd == -1 )
-	ERROR("Produce Timer create error. ");
-
-    return fd;
-}
-
-void SetTimer( float intervalInSeconds, int fd )
-{
-    struct itimerspec ITimerSpec;
-    struct itimerspec ITimerSpecold;
-
-    ITimerSpec.it_interval.tv_sec = (int)intervalInSeconds;
-    ITimerSpec.it_interval.tv_nsec = (intervalInSeconds - (int)intervalInSeconds) * 1000000000;
-    
-    int res;
-    if( (res = timerfd_settime( fd, 0, &ITimerSpec, &ITimerSpecold)) == -1)
-	ERROR("Setting Produce Timer error. ");
-}
-
-void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
-{
-    int res = 0;
-    if( ( res = clock_gettime( ClockType, TimeStructure) ) == -1 )
-	ERROR("clock_gettime() error. ");
-}
-
 void SleepMe( int Tempo )
 {
     float Tempo_Sec = Tempo * 60/96.f;
@@ -353,5 +356,5 @@ void SleepMe( int Tempo )
 
 void PrintUsage()
 {
-	printf("Usage information here... \n");
+	printf("Producent -r <path> -t <val> [<addr>:]port\n\nUsage:\n\t\t<path>  - localization of report file,\n\t\t<val>  -  producing data rate (1-8 second * 60 / 96)[s]\n\t\t[<addr>:]port  -  server localization. Suggested:  \":8000\"\n\n");
 }

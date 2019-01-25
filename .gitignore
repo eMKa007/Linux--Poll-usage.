@@ -1,5 +1,6 @@
 *.swp
 *.o
+*.so
 notatki
 test
 testKons

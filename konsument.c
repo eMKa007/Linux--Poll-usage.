@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <poll.h>
 
 #include "RoundBuffer.h"
 
@@ -71,21 +72,45 @@ void RunClientRun( int NumberOfPosts, int socket_fd )
 
 void RunR( int NumberOfPosts, int socket_fd )
 {
+    
     SetTimer( delay, Timer);
     //send first request here?
-    
+   
+    char* TempBuffer = (char*)calloc(28000, sizeof(char));
+    struct pollfd TimerPoll;
+    TimerPoll.fd = Timer;
+    TimerPoll.events = POLLIN;
+
+    struct pollfd ReadSock;
+    ReadSock.fd = sock_fd;
+    ReadSock.events = POLLIN;
     
     int Incomes = 0;
     int IncomesNeed = NumberOfPosts;
+    int res = 0;
     while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request every time period.
     {
 	//If read from TimerDescriptor
-	    //Send request
-		//NumberOfPosts--
-		//Kliknij znaczniki czasu
-	
+	if( poll( &TimerPoll, 1, 0) )
+	{
+	    //Send request;
+	    write( socket_fd, "a", sizeof(char));
+	    NumberOfPosts--;
+
+	    //Znaczniki Czasu.
+	}
+
 	//Read from socket descriptor, nieblokujaco.
-	    //Jesli sie uda przeczytac
+	if( poll( &ReadSock, 1, 0) )
+	{
+	    //Znacznik Czasu 1. Latency 1. 
+	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) < sizeof(TempBuffer))
+	    {
+	    }	
+	    
+	    //Znacznik Czasu 2.
+	}
+		//Jesli sie uda przeczytac
 	    //oblicz sume, dodaj do raportu ze znacznikami czasu.
 	    //Incomes++
     }	
@@ -347,6 +372,10 @@ void WriteReport( FILE* OutputFile, int ReportType, int Latency1, int Latency2, 
 			count, Latency1, Latency2, MD5);
 		count++;
 	    }; break;
+	case 3:
+	    {
+		fprintf( Report, "Read error!! Block %d corrupted. ", count);
+	    } break;
     }
 }
 

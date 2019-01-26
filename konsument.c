@@ -28,23 +28,28 @@ int Timer;
 
 FILE* Report;
 
-int ReadArguments( int argc, char* argv[]);
-
-float RandomVal( char* argument );
-
+//In main() functions
 int PrepareClient();
+int ReadArguments( int argc, char* argv[]);
 void RunClientRun( int NumberOfPosts, int socket_fd );
+
+//Usage Functions
 void RunS( int NumberOfPosts, int sock_fd );
 void RunR( int NumberOfPosts, int socket_fd );
 void OpenFileToWrite();
-void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 );
+float RandomVal( char* argument );
+unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len );
+
+//Time functions
 void SetTimer( float intervalInSeconds, int fd );
 int CreateTimer( int clockid );
 void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 float DeltaT( struct timespec First, struct timespec Secodn );
-unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len );
-void SleepMe( int Tempo );
+
+//Output functions
+void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 );
 void PrintUsage();
+
 
 int main( int argc, char* argv[])
 {
@@ -81,51 +86,46 @@ void RunR( int NumberOfPosts, int socket_fd )
     //send first request here?
    
     char* TempBuffer = (char*)calloc(28000, sizeof(char));
-    struct pollfd TimerPoll;
+    struct pollfd TimerPoll, ReadSock;
     TimerPoll.fd = Timer;
     TimerPoll.events = POLLIN;
-
-    struct pollfd ReadSock;
     ReadSock.fd = socket_fd;
     ReadSock.events = POLLIN;
-    
+
     SetTimer( delay, Timer);
 
     int Incomes = 0;
     int IncomesNeed = NumberOfPosts;
     unsigned long res = 0;
-    while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request every time period.
+    while( NumberOfPosts != 0 || Incomes != IncomesNeed  )	//Request every time period.
     {
 	if( poll( &TimerPoll, 1, 0) )
 	{
-	    CheckTime( &AfterSend, CLOCK_REALTIME );
-	    write( socket_fd, "a", sizeof(char));
-	    printf("Request for data sent. \n");
-	    NumberOfPosts--;
-
+	    if( NumberOfPosts)
+	    {
+		CheckTime( &AfterSend, CLOCK_REALTIME );
+		write( socket_fd, "aaaa", 4*sizeof(char));
+		printf("Request for data sent. %lu bytes. \n", sizeof(char));
+		NumberOfPosts--;
+	    }
 	}
 
-	if( poll( &ReadSock, 1, 0) ) //Non blocking.
+	if( poll(&ReadSock, 1, 0) )
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) < sizeof(TempBuffer))
-	    {
-		WriteReport( Report, 3, 0, 0, 0);
-	    }
-	    else
+	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) > 0 )
 	    {
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
-			
+		
 		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
 		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), 
-			DeltaT( AfterRead, AfterBlock), 
-			ComputeMD5( MD5Table, TempBuffer, res));
+		    DeltaT( AfterRead, AfterBlock), 
+		    ComputeMD5( MD5Table, TempBuffer, res));
 		
-		fflush( Report );
 		Incomes++;
-	    }		
+	    }
+	}		
 	    
-	}
     }	
 }
 
@@ -146,7 +146,7 @@ void RunS( int NumberOfPosts, int socket_fd )
     unsigned long res = 0;
     while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request after whole block readed.
     {
-	write( socket_fd, "a", sizeof(char));
+	write( socket_fd, "aaaa", 4*sizeof(char));
 	CheckTime( &AfterSend, CLOCK_REALTIME );
 	printf("Request for data sent. \n");
 	NumberOfPosts--;
@@ -167,7 +167,6 @@ void RunS( int NumberOfPosts, int socket_fd )
 			DeltaT( AfterRead, AfterBlock), 
 			ComputeMD5( MD5Table, TempBuffer, res));
 		
-		fflush( Report );
 		Incomes++;
 	    }		
 	    
@@ -184,18 +183,7 @@ unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len )
     return MD5Table;
 }
 
-float DeltaT( struct timespec First, struct timespec Second )
-{   
-    float sec = Second.tv_nsec - First.tv_nsec; 
-    if( sec < 0 )
-    {
-	sec = ( Second.tv_nsec + 1000000000) - First.tv_nsec;
-	First.tv_sec--;
-    }
-    sec = sec/1000000000.f;
 
-    return (Second.tv_sec-First.tv_sec)+sec;
-}
 
 int PrepareClient()
 {
@@ -213,7 +201,7 @@ int PrepareClient()
     if( (r = inet_aton(Addr, &Addres.sin_addr)) == 0 )
 	ERROR("Internet routine manipulation fail.. ");
 
-    if( (r = connect( sock_fd, (struct sockaddr*)&Addres, sizeof(Addres)) ) == -1)
+    if( (r = connect( sock_fd, (struct sockaddr*)&Addres, (socklen_t)sizeof(Addres)) ) == -1)
     {
 	ERROR("Socket connect error.. ");
     }
@@ -352,15 +340,6 @@ float RandomVal( char* argument )
     return FirstVal + scale * (SecondVal - FirstVal);
 }
 
-void SleepMe( int Delay )
-{
-    struct timespec tim, tim2;
-    tim.tv_sec = Delay;
-    tim.tv_nsec = 0;
-    
-    nanosleep(&tim, &tim2);
-}
-
 void OpenFileToWrite()
 {
     char Path[] = "Report_Client";
@@ -412,7 +391,22 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
     if( ( res = clock_gettime( ClockType, TimeStructure) ) == -1 )
 	ERROR("clock_gettime() error. ");
 }
+
+float DeltaT( struct timespec First, struct timespec Second )
+{   
+    float sec = Second.tv_nsec - First.tv_nsec; 
+    if( sec < 0 )
+    {
+	sec = ( Second.tv_nsec + 1000000000) - First.tv_nsec;
+	First.tv_sec--;
+    }
+    sec = sec/1000000000.f;
+
+    return (Second.tv_sec-First.tv_sec)+sec;
+}
 //---------------------------------------------------------------------------------------------
+
+
 void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 )
 {
     static int count = 0;
@@ -440,6 +434,8 @@ void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latenc
 		fprintf( Report, "Read error!! Block %d corrupted. ", count);
 	    } break;
     }
+
+    fflush( Report );
 }
 
 void PrintUsage()

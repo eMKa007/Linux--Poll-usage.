@@ -68,7 +68,6 @@ void OpenFileToWrite();
 int CreateTimer( int clockid );
 void SetTimer( float intervalInSeconds, int TimerFD );
 void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
-void SleepMe( int Tempo );
 
 // Usage Functions
 void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportType );
@@ -208,7 +207,7 @@ void MainLoop( int Tempo )
     while( poll( &Temp, 1, 0 ) == 0 )
     {
 	// Poll na wszystkich deskrypotrach
-	poll( PollTable, TotalClients+3, -1);	
+	poll( PollTable, TotalClients+3, 0);	
     	
 	// Sprawdzenie zegara produkcja
 	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
@@ -234,21 +233,20 @@ void MainLoop( int Tempo )
 	
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
 	long i = 3;
-	while( i < PollTableSize )
+	while( i < PollTableSize && TotalClients > 0 )
 	{
 	    if( PollTable[i].revents == POLLNVAL )
 	    {
 		PollTable[i].revents = 0;
-		PollTable[i].events = -1;
+		PollTable[i].fd = -1;
 		TotalClients--;
-		//Client idx in InfoTable is swift by 3 from PollTable.
-		WriteReport( Report, i-3, TotalClients, 2);
+		WriteReport( Report, i-3, TotalClients, 2); 
 	    }
-	    else if( PollTable[i].revents == POLLIN ) // read( PollTable[i].fd, fd_buffer, 4) > 0 )
+	    else if( PollTable[i].fd > 0 && read( PollTable[i].fd, fd_buffer, 4) > 0 )
 	    {
 		PollTable[i].revents = 0;
  		pushInt(ToSendBuffer, PollTable[i].fd);
-		printf("New order from Client: %d", PollTable[i].fd);
+		printf("\t\tNew order from Client: %d\n", PollTable[i].fd);
 	    }
 	    
 	    i++;	    
@@ -270,21 +268,20 @@ void MainLoop( int Tempo )
 		memset( TempBuffer, 0, sizeof(TempBuffer)/sizeof(*TempBuffer) );
 	    }
 	}
-	fflush(Report);
     }
 
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     if( fprintf( Report, "\n----- Server ends work: %d.%d.%d at %d:%d:%d. ----- \n", 
 		tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) < 0)
-	ERROR("First print error. OpenFileToWrite(). ");
-
+	ERROR("End Work Message Error. ");
+    fflush(Report);
 }
 
 int CreateAcceptSocket()
 {
     //Utworzenie gniazda..
-    int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int sock_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if( sock_fd  == -1 )
     {
 	ERROR("Socket initialise error. ");
@@ -315,9 +312,9 @@ void AcceptAndPlaceInPollTab( int socketFd )
     struct sockaddr_in Client;
     socklen_t ClientLen;
     int Client_fd;
-    if( (Client_fd = accept( socketFd, (struct sockaddr*)&Client, &ClientLen)) == -1)
-       ERROR("New client acceptance error. ");	
-    
+    if( (Client_fd = accept4( socketFd, (struct sockaddr*)&Client, &ClientLen, SOCK_NONBLOCK)) == -1)
+       ERROR("New client acceptance error. ");	 
+
     printf("New Client has come! \n");
     PlaceIntoPollTable( Client_fd );
     PlaceClientInTab( Client, Client_fd );
@@ -331,9 +328,7 @@ void PlaceIntoPollTable( int ClientFd )
     Client.events = POLLIN | POLLNVAL;
 
     if( idx == PollTableSize )
-    {
 	PollTable = (struct pollfd*)realloc( PollTable, (++PollTableSize)*sizeof(struct pollfd));
-    }
 
     PollTable[idx] = Client;
     TotalClients++;
@@ -411,7 +406,7 @@ int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int Last
 
 int CreateTimer( int clockid )
 {
-    int fd = timerfd_create( clockid, 0);
+    int fd = timerfd_create( clockid, TFD_NONBLOCK);
     if( fd == -1 )
 	ERROR("Produce Timer create error. ");
 
@@ -468,16 +463,7 @@ void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportT
     }
 
     fprintf(OutputFile, "\n====================\n");
-}
-
-void SleepMe( int Tempo )
-{
-    float Tempo_Sec = Tempo * 60/96.f;
-    struct timespec tim, tim2;
-    tim.tv_sec = (int)Tempo_Sec;
-    tim.tv_nsec = (Tempo_Sec - tim.tv_sec) * 1000000000;
-    
-    nanosleep(&tim, &tim2);
+    fflush(Report);
 }
 
 void PrintUsage()

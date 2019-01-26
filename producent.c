@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
@@ -195,7 +196,7 @@ void MainLoop( int Tempo )
     while( poll( &Temp, 1, 0 ) == 0 )
     {
 	// Poll na wszystkich deskrypotrach
-	poll( PollTable, TotalClients+3, 0);	
+	poll( PollTable, PollTableSize, 0);	
     	
 	// Sprawdzenie zegara produkcja
 	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
@@ -251,19 +252,22 @@ void TimeReportAction()
 
 void FillInSendTable( int i, char* fd_buffer )
 {
-     if( PollTable[i].revents == POLLNVAL )
-	    {
-		PollTable[i].revents = 0;
-		PollTable[i].fd = -1;
-		TotalClients--;
-		WriteReport( Report, i-3, TotalClients, 2); 
-	    }
-	    else if( PollTable[i].fd > 0 && read( PollTable[i].fd, fd_buffer, 4) > 0 )
-	    {
-		PollTable[i].revents = 0;
- 		pushInt(ToSendBuffer, PollTable[i].fd);
-		printf("\t\tNew order from Client: %d\n", PollTable[i].fd);
-	    }
+    int res = 0;
+    if( PollTable[i].fd > 0 && (res = read( PollTable[i].fd, fd_buffer, 4)) <= 0 
+	    && PollTable[i].revents == 1 )
+    {
+	//PollTable[i].revents = 0;
+	printf("\t\tClient %d has closed the connection.\n", PollTable[i].fd);
+	PollTable[i].fd *= -1;
+	TotalClients--;
+	WriteReport( Report, i-3, TotalClients, 2);
+    }
+    else if( res > 0 )
+    {
+	PollTable[i].revents = 0;
+ 	pushInt(ToSendBuffer, PollTable[i].fd);
+	printf("\t\tNew order from Client %d, saying \"%s\"\n", PollTable[i].fd, fd_buffer);
+    }
 }
 
 int CreateAcceptSocket()
@@ -303,7 +307,7 @@ void AcceptAndPlaceInPollTab( int socketFd )
     if( (Client_fd = accept4( socketFd, (struct sockaddr*)&Client, &ClientLen, SOCK_NONBLOCK)) == -1)
        ERROR("New client acceptance error. ");	 
 
-    printf("New Client has come! \n");
+    printf("\t\tNew Client has come! Number: %d \n", Client_fd);
     PlaceIntoPollTable( Client_fd );
     PlaceClientInTab( Client, Client_fd );
 }

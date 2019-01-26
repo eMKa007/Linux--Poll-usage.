@@ -26,6 +26,7 @@ void RunClientRun( int NumberOfPosts, int socket_fd );
 //Usage Functions
 void RunS( int NumberOfPosts, int sock_fd );
 void RunR( int NumberOfPosts, int socket_fd );
+int SendRequest( struct timespec* After, int socket_fd, int NumberOfPosts);
 void OpenFileToWrite();
 float RandomVal( char* argument );
 unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len );
@@ -43,7 +44,7 @@ int main( int argc, char* argv[])
     
     int socket_fd = PrepareClient();
     RunClientRun( NumberOfPosts, socket_fd ); 
-    
+   
     close( socket_fd );
     return 0;
 }
@@ -115,15 +116,8 @@ void RunR( int NumberOfPosts, int socket_fd )
     while( NumberOfPosts != 0 || Incomes != IncomesNeed  )	//Request every time period.
     {
 	if( poll( &TimerPoll, 1, 0) )
-	{
 	    if( NumberOfPosts && read( Timer, TempBuffer, 8) > 0 )
-	    {
-		CheckTime( &AfterSend, CLOCK_REALTIME );
-		write( socket_fd, "aaaa", 4*sizeof(char));
-		printf("Request for data sent. %lu bytes. \n", sizeof(char));
-		NumberOfPosts--;
-	    }
-	}
+		NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
 
 	if( poll(&ReadSock, 1, 0) )
 	{
@@ -140,7 +134,9 @@ void RunR( int NumberOfPosts, int socket_fd )
 		Incomes++;
 	    }
 	}		
-	    
+
+	if(!NumberOfPosts)
+	    return;
     }	
 }
 
@@ -161,10 +157,8 @@ void RunS( int NumberOfPosts, int socket_fd )
     unsigned long res = 0;
     while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request after whole block readed.
     {
-	write( socket_fd, "aaaa", 4*sizeof(char));
-	CheckTime( &AfterSend, CLOCK_REALTIME );
-	printf("Request for data sent. \n");
-	NumberOfPosts--;
+	
+	NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
 	
 	if( poll( &ReadSock, 1, -1) )	//Blocking till read available.
 	{
@@ -184,9 +178,16 @@ void RunS( int NumberOfPosts, int socket_fd )
 		
 		Incomes++;
 	    }		
-	    
 	}
     }
+}
+
+int SendRequest( struct timespec* After, int socket_fd, int NumberOfPosts)
+{
+    write( socket_fd, "PwsL", 4*sizeof(char));
+    CheckTime( After, CLOCK_REALTIME );
+    printf("Request for data sent. %lu bytes. \n", sizeof(char));
+    return --NumberOfPosts;
 }
 
 unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len )

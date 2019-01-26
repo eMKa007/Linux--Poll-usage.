@@ -38,6 +38,11 @@ int port = 0;
 int TotalClients = 0;
 int PollTableSize = 0;
 
+int PacksSent = 0;
+int PacksGen = 0;
+int ProduceBufferUsage = 0;
+int MaxProduceBufferUsage = 0;
+
 struct pollfd* PollTable;
 struct ClientStr* ClientsInfo; 
 struct BufferChar ProduceBuffer; 
@@ -148,6 +153,7 @@ int ReadArguments( int argc, char* argv[])
 void PrepareServer()
 {
     ProduceBuffer = CreateRoundBufferChar(1250000/sizeof(char)); 
+    MaxProduceBufferUsage = 1250000; 
 
     //Utworzenie kolejki cyklicznej ToSend
     ToSendBuffer = CreateRoundBufferInt(1000);
@@ -208,6 +214,7 @@ void MainLoop( int Tempo )
 	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
 	{   
 	    LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
+	    PacksGen++;
 	} 
 	
 	//Sprawdzenie Nadejscia nowego polczenia
@@ -221,6 +228,8 @@ void MainLoop( int Tempo )
 	{
 	    WriteReport( Report, 0, TotalClients, 3);
 	    printf("Clock report written.\n");
+	    PacksGen = 0;
+	    PacksSent = 0;
 	}
 	
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
@@ -256,6 +265,7 @@ void MainLoop( int Tempo )
 		if( (res = send( Client, TempBuffer, sizeof(TempBuffer), 0)) == -1)
 		    perror("Error sending message to client. ");
 		
+		PacksSent++;	
 		//czyszczenie Bufora.
 		memset( TempBuffer, 0, sizeof(TempBuffer)/sizeof(*TempBuffer) );
 	    }
@@ -373,6 +383,7 @@ int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
 	if( pushChar( FillBuffer, (char)ToSend  ) == 0 )
 	    return i;
 	i++;
+	ProduceBufferUsage++;
     }
     
     if( Case % 2) ToSend++;
@@ -449,7 +460,10 @@ void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportT
 	    }; break;
 	case 3: 
 	    {
-		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: USAGE HERE.\nData roll: DATA ROLL here\n", TotalClients);
+		int bytesGen = PacksGen * 640;
+		int bytesSent = PacksSent * 112000;
+		int PercentUsage = ProduceBufferUsage * 100 / MaxProduceBufferUsage;
+		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: %d[B] (%d%% of capacity).\nData roll: %d\n", TotalClients, ProduceBufferUsage, PercentUsage, bytesGen-bytesSent);
 	    }; break;
     }
 

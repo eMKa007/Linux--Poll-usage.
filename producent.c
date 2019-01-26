@@ -10,12 +10,6 @@
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
 
-#define ERROR(x) do{\
-    perror(x);\
-    exit(-1);\
-}while(0)
-
-
 #define ACC_SOCK 0
 #define TIM_PROD 1
 #define TIM_REP 2
@@ -28,13 +22,13 @@ struct ClientStr
     struct in_addr Adress;
 };
 
-// Global Variables
+// Variables
 char Path[80] = {0};
 char Addr[80] = "127.0.0.1";
+
 int port = 0;
 int TotalClients = 0;
 int PollTableSize = 0;
-
 int PacksSent = 0;
 int PacksGen = 0;
 int ProduceBufferUsage = 0;
@@ -57,17 +51,15 @@ int FillProduceBuffer( struct BufferChar, int LastIdx );
 int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int LastIdx );
 int CreateAcceptSocket();
 void PlaceIntoPollTable( int ClientFd );
+void FillInSendTable( int i, char* fd_buffer );
 void AcceptAndPlaceInPollTab( int socketFd );
 void PlaceClientInTab( struct sockaddr_in newClient, int ClientFd );
 void OpenFileToWrite();
-
-// Time Functions
-int CreateTimer( int clockid );
-void SetTimer( float intervalInSeconds, int TimerFD );
-void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
+void TimeReportAction();
 
 // Usage Functions
 void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportType );
+void FinalReport();
 void PrintUsage();
 
 
@@ -187,7 +179,6 @@ void MainLoop( int Tempo )
     if( !TempBuffer || !fd_buffer)
 	ERROR("Memory allocation error. MainLoop(). ");
 
-
     //Wystartowanie zegara produkcyjnego
     SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
@@ -215,37 +206,17 @@ void MainLoop( int Tempo )
 	
 	//Sprawdzenie Nadejscia nowego polczenia
 	if( PollTable[ACC_SOCK].revents == POLLIN )
-	{
 	    AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
-	}
 	
 	//Sprawdzenie zegara raport
 	if( read( PollTable[TIM_REP].fd, fd_buffer, 8) > 0 )
-	{
-	    WriteReport( Report, 0, TotalClients, 3);
-	    printf("Clock report written.\n");
-	    PacksGen = 0;
-	    PacksSent = 0;
-	}
+	    TimeReportAction();    
 	
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
 	long i = 3;
 	while( i < PollTableSize && TotalClients > 0 )
 	{
-	    if( PollTable[i].revents == POLLNVAL )
-	    {
-		PollTable[i].revents = 0;
-		PollTable[i].fd = -1;
-		TotalClients--;
-		WriteReport( Report, i-3, TotalClients, 2); 
-	    }
-	    else if( PollTable[i].fd > 0 && read( PollTable[i].fd, fd_buffer, 4) > 0 )
-	    {
-		PollTable[i].revents = 0;
- 		pushInt(ToSendBuffer, PollTable[i].fd);
-		printf("\t\tNew order from Client: %d\n", PollTable[i].fd);
-	    }
-	    
+	    FillInSendTable( i, fd_buffer); 
 	    i++;	    
 	}
 
@@ -267,12 +238,32 @@ void MainLoop( int Tempo )
 	}
     }
 
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    if( fprintf( Report, "\n----- Server ends work: %d.%d.%d at %d:%d:%d. ----- \n", 
-		tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) < 0)
-	ERROR("End Work Message Error. ");
-    fflush(Report);
+    FinalReport();
+}
+
+void TimeReportAction()
+{
+    WriteReport( Report, 0, TotalClients, 3);
+    printf("Clock report written.\n");
+    PacksGen = 0;
+    PacksSent = 0;
+}
+
+void FillInSendTable( int i, char* fd_buffer )
+{
+     if( PollTable[i].revents == POLLNVAL )
+	    {
+		PollTable[i].revents = 0;
+		PollTable[i].fd = -1;
+		TotalClients--;
+		WriteReport( Report, i-3, TotalClients, 2); 
+	    }
+	    else if( PollTable[i].fd > 0 && read( PollTable[i].fd, fd_buffer, 4) > 0 )
+	    {
+		PollTable[i].revents = 0;
+ 		pushInt(ToSendBuffer, PollTable[i].fd);
+		printf("\t\tNew order from Client: %d\n", PollTable[i].fd);
+	    }
 }
 
 int CreateAcceptSocket()
@@ -361,27 +352,28 @@ int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
 {
     static int Case = 0;
     static int ToSend = 0;
+    int Temp;
     int i = 0;
     if( LastIdx )
 	i = LastIdx;
     
     if( Case % 2 )
-	ToSend = tolower( (ToSend%26)+65 );
+	Temp = tolower( (ToSend%25)+65 );
     else
-	ToSend = (ToSend%26)+65;
+	Temp = (ToSend%26)+65;
 
-    while( i < 160 )	//640 bytes
+    while( i < 640 )	//640 bytes
     {
-	if( pushChar( FillBuffer, (char)ToSend  ) == 0 )
+	if( pushChar( FillBuffer, (char)Temp  ) == 0 )
 	    return i;
 	i++;
 	ProduceBufferUsage++;
     }
     
+    printf("Buffer filled %dx'%c'. \n", i, (char)Temp);
     if( Case % 2) ToSend++;
     Case++;
     
-    printf("Buffer filled %dx'A'. \n", i);
     return 0; 
 } 
 
@@ -407,28 +399,42 @@ void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportT
     CheckTime( &TimMonotonic, CLOCK_MONOTONIC );
     CheckTime( &TimWall, CLOCK_REALTIME );
     
-    fprintf( OutputFile, "\n%ld [Monotonic]    %ld [RealTime aka WallTime]\n", TimMonotonic.tv_sec+(TimMonotonic.tv_nsec/1000000000), TimWall.tv_sec+(TimWall.tv_nsec/1000000000));
+    fprintf( OutputFile, "\n%ld [Monotonic]    %ld [RealTime aka WallTime]\n", 
+	    TimMonotonic.tv_sec+(TimMonotonic.tv_nsec/1000000000), TimWall.tv_sec+(TimWall.tv_nsec/1000000000));
    
     switch (ReportType)
     {
 	case 1: 
 	    {
-		fprintf(OutputFile, "New client adress: %u\n", ClientsInfo[ClientIdx].Adress.s_addr);
+		fprintf(OutputFile, "New client adress: %u\n", 
+			ClientsInfo[ClientIdx].Adress.s_addr);
 	    }; break;
 	case 2: 
 	    {
-		fprintf(OutputFile, "Client disconnect: %u.\nTotal packages sent: %d\n", ClientsInfo[ClientIdx].Adress.s_addr, ClientsInfo[ClientIdx].PackagesDelivered);
+		fprintf(OutputFile, "Client disconnect: %u.\nTotal packages sent: %d\n", 
+			ClientsInfo[ClientIdx].Adress.s_addr, ClientsInfo[ClientIdx].PackagesDelivered);
 	    }; break;
 	case 3: 
 	    {
 		int bytesGen = PacksGen * 640;
 		int bytesSent = PacksSent * 112000;
 		int PercentUsage = ProduceBufferUsage * 100 / MaxProduceBufferUsage;
-		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: %d[B] (%d%% of capacity).\nData roll: %d\n", TotalClients, ProduceBufferUsage, PercentUsage, bytesGen-bytesSent);
+		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: %d[B] (%d%% of capacity).\nData roll: %d\n", 
+			TotalClients, ProduceBufferUsage, PercentUsage, bytesGen-bytesSent);
 	    }; break;
     }
 
     fprintf(OutputFile, "\n====================\n");
+    fflush(Report);
+}
+
+void FinalReport()
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    if( fprintf( Report, "\n----- Server ends work: %d.%d.%d at %d:%d:%d. ----- \n", 
+		tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) < 0)
+	ERROR("End Work Message Error. ");
     fflush(Report);
 }
 

@@ -9,12 +9,6 @@
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
 
-#define ERROR(x) do{\
-    perror(x);\
-    exit(-1);\
-}while(0)
-
-
 float delay;	    //delay in seconds.
 int rFlag = 0;
 int sFlag = 0; 

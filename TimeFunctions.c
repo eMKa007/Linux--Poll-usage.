@@ -1,10 +1,5 @@
 #include "TimeFunctions.h"
 
-#define ERROR(x) do{\
-    perror(x);\
-    exit(-1);\
-}while(0)
-
 int CreateTimer( int clockid )
 {
     int fd = timerfd_create( clockid, TFD_NONBLOCK);

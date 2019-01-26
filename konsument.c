@@ -42,7 +42,7 @@ void SetTimer( float intervalInSeconds, int fd );
 int CreateTimer( int clockid );
 void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 float DeltaT( struct timespec First, struct timespec Secodn );
-unsigned char* ComputeMD5( char* TempBuffer, int len );
+unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len );
 void SleepMe( int Tempo );
 void PrintUsage();
 
@@ -54,16 +54,13 @@ int main( int argc, char* argv[])
     
     int socket_fd = PrepareClient();
     RunClientRun( NumberOfPosts, socket_fd ); 
-
+    
+    close( socket_fd );
     return 0;
 }
 
 void RunClientRun( int NumberOfPosts, int socket_fd )
 {
-    //------- Init md5 
-    
-    //----------------
-
     switch( rFlag )
     {
 	case 0:
@@ -99,20 +96,17 @@ void RunR( int NumberOfPosts, int socket_fd )
     unsigned long res = 0;
     while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request every time period.
     {
-	//If read from TimerDescriptor
 	if( poll( &TimerPoll, 1, 0) )
 	{
 	    CheckTime( &AfterSend, CLOCK_REALTIME );
-	    //Send request;
 	    write( socket_fd, "a", sizeof(char));
+	    printf("Request for data sent. \n");
 	    NumberOfPosts--;
 
 	}
 
-	//Read from socket descriptor, nieblokujaco.
-	if( poll( &ReadSock, 1, 0) )
+	if( poll( &ReadSock, 1, 0) ) //Non blocking.
 	{
-	    //Znacznik Czasu 1. Latency 1. 
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
 	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) < sizeof(TempBuffer))
 	    {
@@ -120,17 +114,13 @@ void RunR( int NumberOfPosts, int socket_fd )
 	    }
 	    else
 	    {
-		//Znacznik Czasu 2.
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
 			
-		//Obliczenie MD5.
 		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
-		MD5_CTX md5;
-		MD5_Init( &md5 );
-		MD5_Update( &md5, TempBuffer, res);
-		MD5_Final( MD5Table, &md5);
-
-		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), DeltaT( AfterRead, AfterBlock), MD5Table);
+		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), 
+			DeltaT( AfterRead, AfterBlock), 
+			ComputeMD5( MD5Table, TempBuffer, res));
+		
 		fflush( Report );
 		Incomes++;
 	    }		
@@ -158,13 +148,11 @@ void RunS( int NumberOfPosts, int socket_fd )
     unsigned long res = 0;
     while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request after whole block readed.
     {
-	if( poll( &TimerPoll, 1, 0) )
-	{
-	    CheckTime( &AfterSend, CLOCK_REALTIME );
-	    write( socket_fd, "a", sizeof(char));
-	    NumberOfPosts--;
-	}
-
+	write( socket_fd, "a", sizeof(char));
+	CheckTime( &AfterSend, CLOCK_REALTIME );
+	printf("Request for data sent. \n");
+	NumberOfPosts--;
+	
 	if( poll( &ReadSock, 1, -1) )	//Blocking till read available.
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
@@ -175,9 +163,11 @@ void RunS( int NumberOfPosts, int socket_fd )
 	    else
 	    {
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
-		
+
+		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
 		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), 
-			DeltaT( AfterRead, AfterBlock), ComputeMD5(TempBuffer, res));
+			DeltaT( AfterRead, AfterBlock), 
+			ComputeMD5( MD5Table, TempBuffer, res));
 		
 		fflush( Report );
 		Incomes++;
@@ -187,14 +177,13 @@ void RunS( int NumberOfPosts, int socket_fd )
     }
 }
 
-unsigned char* ComputeMD5( char* TempBuffer, int len )
+unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len )
 {
-    unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
     MD5_CTX md5;
     MD5_Init( &md5 );
     MD5_Update( &md5, TempBuffer, len);
     MD5_Final( MD5Table, &md5);
-
+    return MD5Table;
 }
 
 float DeltaT( struct timespec First, struct timespec Second )
@@ -426,7 +415,7 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
 	ERROR("clock_gettime() error. ");
 }
 //---------------------------------------------------------------------------------------------
-void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, char* MD5 )
+void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 )
 {
     static int count = 0;
         switch (ReportType)

@@ -35,6 +35,7 @@ char Path[80] = {0};
 char Addr[80] = "127.0.0.1";
 int port = 0;
 int TotalClients = 0;
+int PollTableSize = 0;
 
 struct pollfd* PollTable;
 struct ClientStr* ClientsInfo; 
@@ -154,7 +155,8 @@ void PrepareServer()
     ClientsInfo = (struct ClientStr*)calloc(10, sizeof(struct ClientStr));
 
     //Utworzenie Tablicy dla Poll.
-    PollTable = (struct pollfd*)calloc(4, sizeof(struct pollfd));
+    PollTableSize = 10;
+    PollTable = (struct pollfd*)calloc(PollTableSize, sizeof(struct pollfd));
     
     //Utworzenie socketu do połączeń.
     int AccSock = CreateAcceptSocket();
@@ -221,19 +223,22 @@ void MainLoop( int Tempo )
 	}
 	
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
-	unsigned long i = 3;
-	while( i < sizeof(PollTable)/sizeof(*PollTable) )
+	long i = 3;
+	while( i < PollTableSize )
 	{
 	    if( PollTable[i].revents == POLLNVAL )
 	    {
+		PollTable[i].revents = 0;
 		PollTable[i].events = -1;
 		TotalClients--;
 		//Client idx in InfoTable is swift by 3 from PollTable.
 		WriteReport( Report, i-3, TotalClients, 2);
 	    }
-	    else if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
+	    else if( PollTable[i].revents == POLLIN ) // read( PollTable[i].fd, fd_buffer, 4) > 0 )
 	    {
+		PollTable[i].revents = 0;
  		pushInt(ToSendBuffer, PollTable[i].fd);
+		printf("New order from Client: %d", PollTable[i].fd);
 	    }
 	    
 	    i++;	    
@@ -314,11 +319,11 @@ void PlaceIntoPollTable( int ClientFd )
     Client.fd = ClientFd;
     Client.events = POLLIN | POLLNVAL;
 
-    if( idx == sizeof(PollTable)/sizeof(*PollTable) )
+    if( idx == PollTableSize )
     {
-	PollTable = (struct pollfd*)realloc( PollTable, sizeof(PollTable)+sizeof(struct pollfd));	
+	PollTable = (struct pollfd*)realloc( PollTable, (++PollTableSize)*sizeof(struct pollfd));
     }
-     
+
     PollTable[idx] = Client;
     TotalClients++;
     idx++;

@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <openssl/md5.h>
 
 #include "RoundBuffer.h"
 
@@ -36,9 +37,11 @@ void RunClientRun( int NumberOfPosts, int socket_fd );
 void RunS( int NumberOfPosts, int sock_fd );
 void RunR( int NumberOfPosts, int socket_fd );
 void OpenFileToWrite();
-void WriteReport( FILE* OutputFile, int ReportType, int Latency1, int Latency2, char* MD5 );
+void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 );
 void SetTimer( float intervalInSeconds, int fd );
 int CreateTimer( int clockid );
+void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
+float DeltaT( struct timespec First, struct timespec Secodn );
 void SleepMe( int Tempo );
 void PrintUsage();
 
@@ -56,6 +59,10 @@ int main( int argc, char* argv[])
 
 void RunClientRun( int NumberOfPosts, int socket_fd )
 {
+    //------- Init md5 
+    
+    //----------------
+
     switch( rFlag )
     {
 	case 0:
@@ -72,8 +79,7 @@ void RunClientRun( int NumberOfPosts, int socket_fd )
 
 void RunR( int NumberOfPosts, int socket_fd )
 {
-    
-    SetTimer( delay, Timer);
+    struct timespec AfterSend, AfterRead, AfterBlock;
     //send first request here?
    
     char* TempBuffer = (char*)calloc(28000, sizeof(char));
@@ -82,55 +88,130 @@ void RunR( int NumberOfPosts, int socket_fd )
     TimerPoll.events = POLLIN;
 
     struct pollfd ReadSock;
-    ReadSock.fd = sock_fd;
+    ReadSock.fd = socket_fd;
     ReadSock.events = POLLIN;
     
+    SetTimer( delay, Timer);
+
     int Incomes = 0;
     int IncomesNeed = NumberOfPosts;
-    int res = 0;
+    unsigned long res = 0;
     while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request every time period.
     {
 	//If read from TimerDescriptor
 	if( poll( &TimerPoll, 1, 0) )
 	{
+	    CheckTime( &AfterSend, CLOCK_REALTIME );
 	    //Send request;
 	    write( socket_fd, "a", sizeof(char));
 	    NumberOfPosts--;
 
-	    //Znaczniki Czasu.
 	}
 
 	//Read from socket descriptor, nieblokujaco.
 	if( poll( &ReadSock, 1, 0) )
 	{
 	    //Znacznik Czasu 1. Latency 1. 
+	    CheckTime( &AfterRead, CLOCK_REALTIME );
 	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) < sizeof(TempBuffer))
 	    {
-	    }	
+		WriteReport( Report, 3, 0, 0, 0);
+	    }
+	    else
+	    {
+		//Znacznik Czasu 2.
+		CheckTime( &AfterBlock, CLOCK_REALTIME );
+			
+		//Obliczenie MD5.
+		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
+		MD5_CTX md5;
+		MD5_Init( &md5 );
+		MD5_Update( &md5, TempBuffer, res);
+		MD5_Final( MD5Table, &md5);
+
+		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), DeltaT( AfterRead, AfterBlock), MD5Table);
+		fflush( Report );
+		Incomes++;
+	    }		
 	    
-	    //Znacznik Czasu 2.
 	}
-		//Jesli sie uda przeczytac
-	    //oblicz sume, dodaj do raportu ze znacznikami czasu.
-	    //Incomes++
     }	
 }
 
 void RunS( int NumberOfPosts, int socket_fd )
 {
+    struct timespec AfterSend, AfterRead, AfterBlock;
+    //send first request here?
+   
+    char* TempBuffer = (char*)calloc(28000, sizeof(char));
+    struct pollfd TimerPoll;
+    TimerPoll.fd = Timer;
+    TimerPoll.events = POLLIN;
+
+    struct pollfd ReadSock;
+    ReadSock.fd = socket_fd;
+    ReadSock.events = POLLIN;
+    
+    SetTimer( delay, Timer);
+
     int Incomes = 0;
     int IncomesNeed = NumberOfPosts;
-    while( NumberOfPosts != 0 && Incomes == IncomesNeed  )	//Request after whole block read.    
+    unsigned long res = 0;
+    while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request every time period.
     {
-	//if read from timer descriptor
-	    //Send Request
-		//NumberOfPost--;
-		//Kliknij znaczniki czasu
-	
-	//Read frim socket descriptor, blokujaco
-	    //Oblicz sume, dodaj do raportu ze znacznikami czasi
-	    //Incomes++;
-    }	
+	//If read from TimerDescriptor
+	if( poll( &TimerPoll, 1, 0) )
+	{
+	    CheckTime( &AfterSend, CLOCK_REALTIME );
+	    //Send request;
+	    write( socket_fd, "a", sizeof(char));
+	    NumberOfPosts--;
+
+	}
+
+	//Read from socket descriptor, nieblokujaco.
+	if( poll( &ReadSock, 1, -1) )
+	{
+	    //Znacznik Czasu 1. Latency 1. 
+	    CheckTime( &AfterRead, CLOCK_REALTIME );
+	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) < sizeof(TempBuffer))
+	    {
+		WriteReport( Report, 3, 0, 0, 0);
+	    }
+	    else
+	    {
+		//Znacznik Czasu 2.
+		CheckTime( &AfterBlock, CLOCK_REALTIME );
+			
+		//Obliczenie MD5.
+		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
+		MD5_CTX md5;
+		MD5_Init( &md5 );
+		MD5_Update( &md5, TempBuffer, res);
+		MD5_Final( MD5Table, &md5);
+
+		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), 
+			DeltaT( AfterRead, AfterBlock), MD5Table);
+		
+		fflush( Report );
+		Incomes++;
+	    }		
+	    
+	}
+    }
+}
+
+float DeltaT( struct timespec First, struct timespec Second )
+{   
+    float sec = Second.tv_nsec - First.tv_nsec; 
+    if( sec < 0 )
+    {
+	sec = ( Second.tv_nsec + 1000000000) - First.tv_nsec;
+	First.tv_sec--;
+    }
+    sec = sec/1000000000.f;
+
+    return (Second.tv_sec-First.tv_sec)+sec;
 }
 
 int PrepareClient()
@@ -160,8 +241,6 @@ int PrepareClient()
     OpenFileToWrite();
     
     Timer = CreateTimer( CLOCK_REALTIME );
-
-
 
     return sock_fd;
 }
@@ -351,7 +430,7 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
 	ERROR("clock_gettime() error. ");
 }
 //---------------------------------------------------------------------------------------------
-void WriteReport( FILE* OutputFile, int ReportType, int Latency1, int Latency2, char* MD5 )
+void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, char* MD5 )
 {
     static int count = 0;
         switch (ReportType)
@@ -363,12 +442,13 @@ void WriteReport( FILE* OutputFile, int ReportType, int Latency1, int Latency2, 
 		CheckTime( &TimWall, CLOCK_REALTIME );
 
 		fprintf( OutputFile, "\n%ld [Monotonic]    %ld [RealTime aka WallTime]\nClient Info: PID: %d\tAddres: %s:%d\n", 
-			TimMonotonic.tv_sec+(TimMonotonic.tv_nsec/1000000000), TimWall.tv_sec+(TimWall.tv_nsec/1000000000),
+			TimMonotonic.tv_sec+(TimMonotonic.tv_nsec/1000000000), 
+			TimWall.tv_sec+(TimWall.tv_nsec/1000000000),
 			getpid(), Addr, port);
 	    }; break;
 	case 2: 
 	    {
-		fprintf( OutputFile, "==== BLOCK %d ===\nLatency Request-Answer: %d\nLatency First Byte-Whole Block: %d\nMD5 of block %s\n\n",
+		fprintf( OutputFile, "==== BLOCK %d ===\nLatency Request-Answer: %f\nLatency First Byte-Whole Block: %f\nMD5 of block %s\n\n",
 			count, Latency1, Latency2, MD5);
 		count++;
 	    }; break;

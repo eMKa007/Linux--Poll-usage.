@@ -22,6 +22,7 @@ int rFlag = 0;
 int sFlag = 0; 
 char Addr[80] = "127.0.0.1";
 int port = 0;
+int Timer;
 
 FILE* Report;
 
@@ -29,10 +30,10 @@ int ReadArguments( int argc, char* argv[]);
 
 float RandomVal( char* argument );
 
-void PrepareClient();
-void RunClientRun( int NumberOfPosts );
-void RunS( int NumberOfPosts );
-void RunR( int NumberOfPosts );
+int PrepareClient();
+void RunClientRun( int NumberOfPosts, int socket_fd );
+void RunS( int NumberOfPosts, int sock_fd );
+void RunR( int NumberOfPosts, int socket_fd );
 void OpenFileToWrite();
 void WriteReport( FILE* OutputFile, int ReportType, int Latency1, int Latency2, char* MD5 );
 void SetTimer( float intervalInSeconds, int fd );
@@ -46,45 +47,68 @@ int main( int argc, char* argv[])
     printf("Args: \n\t-# %d,\n\t -r/s %f rFlag:%d sFlag:%d,\n\t %s:%d\n", 
     	    NumberOfPosts, delay, rFlag, sFlag, Addr, port);
     
-    PrepareClient();
-    RunClientRun( NumberOfPosts ); 
+    int socket_fd = PrepareClient();
+    RunClientRun( NumberOfPosts, socket_fd ); 
 
     return 0;
 }
 
-void RunClientRun( int NumberOfPosts )
+void RunClientRun( int NumberOfPosts, int socket_fd )
 {
     switch( rFlag )
     {
 	case 0:
 	    {
-		RunS( NumberOfPosts );
+		RunS( NumberOfPosts, socket_fd );
 	    } break;
 	case 1:
 	    {
-		RunR( NumberOfPosts );
+		RunR( NumberOfPosts, socket_fd );
 	    } break;
 	default: break;
     }
 }
 
-void RunR( int NumberOfPosts )
+void RunR( int NumberOfPosts, int socket_fd )
 {
-    while( NumberOfPosts )
-    {
+    SetTimer( delay, Timer);
+    //send first request here?
     
+    
+    int Incomes = 0;
+    int IncomesNeed = NumberOfPosts;
+    while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request every time period.
+    {
+	//If read from TimerDescriptor
+	    //Send request
+		//NumberOfPosts--
+		//Kliknij znaczniki czasu
+	
+	//Read from socket descriptor, nieblokujaco.
+	    //Jesli sie uda przeczytac
+	    //oblicz sume, dodaj do raportu ze znacznikami czasu.
+	    //Incomes++
     }	
 }
 
-void RunS( int NumberOfPosts )
+void RunS( int NumberOfPosts, int socket_fd )
 {
-    while( NumberOfPosts )
+    int Incomes = 0;
+    int IncomesNeed = NumberOfPosts;
+    while( NumberOfPosts != 0 && Incomes == IncomesNeed  )	//Request after whole block read.    
     {
-    
+	//if read from timer descriptor
+	    //Send Request
+		//NumberOfPost--;
+		//Kliknij znaczniki czasu
+	
+	//Read frim socket descriptor, blokujaco
+	    //Oblicz sume, dodaj do raportu ze znacznikami czasi
+	    //Incomes++;
     }	
 }
 
-void PrepareClient()
+int PrepareClient()
 {
     int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if( sock_fd == -1 )
@@ -109,6 +133,12 @@ void PrepareClient()
 	printf("Client connected!\n");
     }
     OpenFileToWrite();
+    
+    Timer = CreateTimer( CLOCK_REALTIME );
+
+
+
+    return sock_fd;
 }
 
 int ReadArguments( int argc, char* argv[])

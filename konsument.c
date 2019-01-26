@@ -29,6 +29,11 @@ int ReadArguments( int argc, char* argv[]);
 
 float RandomVal( char* argument );
 
+void PrepareClient();
+void RunClientRun( int NumberOfPosts );
+void RunS( int NumberOfPosts );
+void RunR( int NumberOfPosts );
+void OpenFileToWrite();
 void WriteReport( FILE* OutputFile, int ReportType, int Latency1, int Latency2, char* MD5 );
 void SetTimer( float intervalInSeconds, int fd );
 int CreateTimer( int clockid );
@@ -40,7 +45,47 @@ int main( int argc, char* argv[])
     int NumberOfPosts = ReadArguments(argc, argv);
     printf("Args: \n\t-# %d,\n\t -r/s %f rFlag:%d sFlag:%d,\n\t %s:%d\n", 
     	    NumberOfPosts, delay, rFlag, sFlag, Addr, port);
- 
+    
+    PrepareClient();
+    RunClientRun( NumberOfPosts ); 
+
+    return 0;
+}
+
+void RunClientRun( int NumberOfPosts )
+{
+    switch( rFlag )
+    {
+	case 0:
+	    {
+		RunS( NumberOfPosts );
+	    } break;
+	case 1:
+	    {
+		RunR( NumberOfPosts );
+	    } break;
+	default: break;
+    }
+}
+
+void RunR( int NumberOfPosts )
+{
+    while( NumberOfPosts )
+    {
+    
+    }	
+}
+
+void RunS( int NumberOfPosts )
+{
+    while( NumberOfPosts )
+    {
+    
+    }	
+}
+
+void PrepareClient()
+{
     int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if( sock_fd == -1 )
 	ERROR("Socket create error. ");
@@ -63,11 +108,7 @@ int main( int argc, char* argv[])
     {
 	printf("Client connected!\n");
     }
-
-    while(1)
-    {}
-
-    return 0;
+    OpenFileToWrite();
 }
 
 int ReadArguments( int argc, char* argv[])
@@ -206,7 +247,7 @@ void SleepMe( int Delay )
 void OpenFileToWrite()
 {
     char Path[] = "Report_Client";
-    char* pid = nullptr;
+    char pid[80] = {0};
     sprintf(pid, "%d", getpid());
     strcat(Path, pid);
 
@@ -219,6 +260,8 @@ void OpenFileToWrite()
     if( fprintf( Report, "\n----- Client start running %d.%d.%d at %d:%d:%d. ----- \n", 
 		tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) < 0)
 	ERROR("First print error. OpenFileToWrite(). ");
+
+    fflush(Report);
 }
 
 // ---------------------------------------------------------------------------------------------- Time

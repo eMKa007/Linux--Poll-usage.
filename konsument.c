@@ -1,10 +1,9 @@
-//vim set sts=4 sw=4:
-#include <stdlib.h>
-#include <stdio.h>
+//#include <stdlib.h>
+//#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
-#include <sys/timerfd.h>
+//#include <time.h>
+//#include <sys/timerfd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -12,6 +11,7 @@
 #include <openssl/md5.h>
 
 #include "RoundBuffer.h"
+#include "TimeFunctions.h"
 
 #define ERROR(x) do{\
     perror(x);\
@@ -41,10 +41,10 @@ float RandomVal( char* argument );
 unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len );
 
 //Time functions
-void SetTimer( float intervalInSeconds, int fd );
-int CreateTimer( int clockid );
-void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
-float DeltaT( struct timespec First, struct timespec Secodn );
+//void SetTimer( float intervalInSeconds, int fd );
+//int CreateTimer( int clockid );
+//void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
+//float DeltaT( struct timespec First, struct timespec Secodn );
 
 //Output functions
 void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 );
@@ -62,6 +62,37 @@ int main( int argc, char* argv[])
     
     close( socket_fd );
     return 0;
+}
+
+int PrepareClient()
+{
+    int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if( sock_fd == -1 )
+	ERROR("Socket create error. ");
+    
+    printf("Socket created! \n");
+
+    struct sockaddr_in Addres;
+    Addres.sin_family = AF_INET;
+    Addres.sin_port = htons(port);
+
+    int r;
+    if( (r = inet_aton(Addr, &Addres.sin_addr)) == 0 )
+	ERROR("Internet routine manipulation fail.. ");
+
+    if( (r = connect( sock_fd, (struct sockaddr*)&Addres, (socklen_t)sizeof(Addres)) ) == -1)
+    {
+	ERROR("Socket connect error.. ");
+    }
+    else if ( r == 0 )
+    {
+	printf("Client connected!\n");
+    }
+    OpenFileToWrite();
+    
+    Timer = CreateTimer( CLOCK_REALTIME );
+
+    return sock_fd;
 }
 
 void RunClientRun( int NumberOfPosts, int socket_fd )
@@ -101,7 +132,7 @@ void RunR( int NumberOfPosts, int socket_fd )
     {
 	if( poll( &TimerPoll, 1, 0) )
 	{
-	    if( NumberOfPosts)
+	    if( NumberOfPosts && read( Timer, TempBuffer, 8) > 0 )
 	    {
 		CheckTime( &AfterSend, CLOCK_REALTIME );
 		write( socket_fd, "aaaa", 4*sizeof(char));
@@ -181,39 +212,6 @@ unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len )
     MD5_Update( &md5, TempBuffer, len);
     MD5_Final( MD5Table, &md5);
     return MD5Table;
-}
-
-
-
-int PrepareClient()
-{
-    int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if( sock_fd == -1 )
-	ERROR("Socket create error. ");
-    
-    printf("Socket created! \n");
-
-    struct sockaddr_in Addres;
-    Addres.sin_family = AF_INET;
-    Addres.sin_port = htons(port);
-
-    int r;
-    if( (r = inet_aton(Addr, &Addres.sin_addr)) == 0 )
-	ERROR("Internet routine manipulation fail.. ");
-
-    if( (r = connect( sock_fd, (struct sockaddr*)&Addres, (socklen_t)sizeof(Addres)) ) == -1)
-    {
-	ERROR("Socket connect error.. ");
-    }
-    else if ( r == 0 )
-    {
-	printf("Client connected!\n");
-    }
-    OpenFileToWrite();
-    
-    Timer = CreateTimer( CLOCK_REALTIME );
-
-    return sock_fd;
 }
 
 int ReadArguments( int argc, char* argv[])
@@ -361,6 +359,7 @@ void OpenFileToWrite()
 }
 
 // ---------------------------------------------------------------------------------------------- Time
+/*
 int CreateTimer( int clockid )
 {
     int fd = timerfd_create( clockid, 0);
@@ -404,6 +403,7 @@ float DeltaT( struct timespec First, struct timespec Second )
 
     return (Second.tv_sec-First.tv_sec)+sec;
 }
+*/
 //---------------------------------------------------------------------------------------------
 
 

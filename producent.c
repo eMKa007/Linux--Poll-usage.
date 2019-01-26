@@ -1,23 +1,26 @@
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <unistd.h>
-#include <time.h>
-#include <sys/timerfd.h>
+//#include <time.h>
+//#include <sys/timerfd.h>
 #include <poll.h>
 #include <ctype.h>
 
 #include "RoundBuffer.h"
+#include "TimeFunctions.h"
+
 
 #define ERROR(x) do{\
     perror(x);\
     exit(-1);\
 }while(0)
+
 
 #define ACC_SOCK 0
 #define TIM_PROD 1
@@ -403,7 +406,7 @@ int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int Last
     }
     return 0;
 }
-
+/*
 int CreateTimer( int clockid )
 {
     int fd = timerfd_create( clockid, TFD_NONBLOCK);
@@ -433,7 +436,7 @@ void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
     int res = 0;
     if( ( res = clock_gettime( ClockType, TimeStructure) ) == -1 )
 	ERROR("clock_gettime() error. ");
-}
+}*/
 
 void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportType )
 {

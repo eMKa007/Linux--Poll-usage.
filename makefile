@@ -1,12 +1,15 @@
 CFLAGS = -g -Wall 
 CC = gcc
 
-all: RoundBuffer.o producent.o konsument.o
-	$(CC) $(CFLAGS) RoundBuffer.o producent.o -o Serwer
-	$(CC) $(CFLAGS) RoundBuffer.o konsument.o -lcrypto -lssl -o Klient
+all: RoundBuffer.o TimeFunctions.o producent.o konsument.o
+	$(CC) $(CFLAGS) RoundBuffer.o TimeFunctions.o producent.o -o Serwer
+	$(CC) $(CFLAGS) RoundBuffer.o TimeFunctions.o konsument.o -lcrypto -lssl -o Klient
 
 RoundBuffer.o: RoundBuffer.c RoundBuffer.h
 	$(CC) $(CFLAGS) RoundBuffer.c -c -o RoundBuffer.o
+
+TimeFunctions.o: TimeFunctions.c TimeFunctions.h
+	$(CC) $(CFLAGS) TimeFunctions.c -c -o TimeFunctions.o
 
 konsument.o: konsument.c
 	$(CC) $(CFLAGS) konsument.c -c -o konsument.o

@@ -1,4 +1,8 @@
 #include <time.h>
+#include <sys/timerfd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 
 int CreateTimer( int clockid );
 void SetTimer( float intervalInSeconds, int TimerFD );

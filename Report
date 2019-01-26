@@ -1,34 +1,616 @@
 
------ Server start running 25.1.25 at 21:39:0. ----- 
-10238 [Monotonic]    1548448745 [RealTime aka WallTime]
-Number of clients connected: 0,
-Storage usage: USAGE HERE.
-Data roll: DATA ROLL here
+----- Server start running 26.1.26 at 10:19:40. ----- 
 
-====================
-10243 [Monotonic]    1548448750 [RealTime aka WallTime]
-Number of clients connected: 0,
-Storage usage: USAGE HERE.
-Data roll: DATA ROLL here
+----- Server ends work: 26.1.26 at 10:19:50. ----- 
 
-====================
-10248 [Monotonic]    1548448755 [RealTime aka WallTime]
-Number of clients connected: 0,
-Storage usage: USAGE HERE.
-Data roll: DATA ROLL here
+----- Server start running 26.1.26 at 10:20:47. ----- 
 
-====================
-10253 [Monotonic]    1548448760 [RealTime aka WallTime]
-Number of clients connected: 0,
-Storage usage: USAGE HERE.
-Data roll: DATA ROLL here
-
-====================
-10258 [Monotonic]    1548448765 [RealTime aka WallTime]
+556 [Monotonic]    1548494452 [RealTime aka WallTime]
 Number of clients connected: 0,
 Storage usage: USAGE HERE.
 Data roll: DATA ROLL here
 
 ====================
 
------ Server ends work: 25.1.25 at 21:39:25. ----- 
+561 [Monotonic]    1548494457 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+566 [Monotonic]    1548494462 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+571 [Monotonic]    1548494467 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+576 [Monotonic]    1548494472 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+581 [Monotonic]    1548494477 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+586 [Monotonic]    1548494482 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+----- Server ends work: 26.1.26 at 10:21:22. ----- 
+
+----- Server start running 26.1.26 at 12:37:24. ----- 
+
+2475 [Monotonic]    1548502649 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+2480 [Monotonic]    1548502654 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+2485 [Monotonic]    1548502659 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+----- Server ends work: 26.1.26 at 12:37:39. ----- 
+
+----- Server start running 26.1.26 at 13:0:15. ----- 
+
+3847 [Monotonic]    1548504020 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3852 [Monotonic]    1548504025 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3857 [Monotonic]    1548504030 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3862 [Monotonic]    1548504035 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3867 [Monotonic]    1548504040 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3872 [Monotonic]    1548504045 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3877 [Monotonic]    1548504050 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3882 [Monotonic]    1548504055 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3887 [Monotonic]    1548504060 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+3892 [Monotonic]    1548504065 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+----- Server ends work: 26.1.26 at 13:1:5. ----- 
+
+----- Server start running 26.1.26 at 13:6:40. ----- 
+
+4232 [Monotonic]    1548504405 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4237 [Monotonic]    1548504410 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4242 [Monotonic]    1548504415 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4247 [Monotonic]    1548504420 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4252 [Monotonic]    1548504425 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4257 [Monotonic]    1548504430 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4262 [Monotonic]    1548504435 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4267 [Monotonic]    1548504440 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4272 [Monotonic]    1548504445 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4277 [Monotonic]    1548504450 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4282 [Monotonic]    1548504455 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4287 [Monotonic]    1548504460 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4292 [Monotonic]    1548504465 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4297 [Monotonic]    1548504470 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4302 [Monotonic]    1548504475 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4307 [Monotonic]    1548504480 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4312 [Monotonic]    1548504485 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4317 [Monotonic]    1548504490 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4322 [Monotonic]    1548504495 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4327 [Monotonic]    1548504500 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4332 [Monotonic]    1548504505 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4337 [Monotonic]    1548504510 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4342 [Monotonic]    1548504515 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4347 [Monotonic]    1548504520 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4352 [Monotonic]    1548504525 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+4357 [Monotonic]    1548504530 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+----- Server ends work: 26.1.26 at 13:8:50. ----- 
+
+----- Server start running 26.1.26 at 13:35:9. ----- 
+
+5940 [Monotonic]    1548506114 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5945 [Monotonic]    1548506119 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5950 [Monotonic]    1548506124 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5955 [Monotonic]    1548506129 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5960 [Monotonic]    1548506134 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5965 [Monotonic]    1548506139 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5970 [Monotonic]    1548506144 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5975 [Monotonic]    1548506149 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5980 [Monotonic]    1548506154 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+5985 [Monotonic]    1548506159 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+----- Server ends work: 26.1.26 at 13:35:59. ----- 
+
+----- Server start running 26.1.26 at 13:36:17. ----- 
+
+6009 [Monotonic]    1548506182 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6014 [Monotonic]    1548506187 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6019 [Monotonic]    1548506192 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6024 [Monotonic]    1548506197 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6029 [Monotonic]    1548506202 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6034 [Monotonic]    1548506207 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6039 [Monotonic]    1548506212 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6044 [Monotonic]    1548506217 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6049 [Monotonic]    1548506222 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6054 [Monotonic]    1548506227 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+----- Server ends work: 26.1.26 at 13:37:7. ----- 
+
+----- Server start running 26.1.26 at 13:43:15. ----- 
+
+6427 [Monotonic]    1548506600 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6432 [Monotonic]    1548506605 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6437 [Monotonic]    1548506610 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+6437 [Monotonic]    1548506610 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6442 [Monotonic]    1548506615 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6447 [Monotonic]    1548506620 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6452 [Monotonic]    1548506625 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6457 [Monotonic]    1548506630 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6462 [Monotonic]    1548506635 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6467 [Monotonic]    1548506640 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6472 [Monotonic]    1548506645 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6477 [Monotonic]    1548506650 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+6477 [Monotonic]    1548506650 [RealTime aka WallTime]
+Number of clients connected: 2,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6482 [Monotonic]    1548506655 [RealTime aka WallTime]
+Number of clients connected: 2,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6487 [Monotonic]    1548506660 [RealTime aka WallTime]
+Number of clients connected: 2,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6492 [Monotonic]    1548506665 [RealTime aka WallTime]
+Number of clients connected: 2,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6497 [Monotonic]    1548506670 [RealTime aka WallTime]
+Number of clients connected: 2,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+6502 [Monotonic]    1548506675 [RealTime aka WallTime]
+Number of clients connected: 2,
+Storage usage: USAGE HERE.
+Data roll: DATA ROLL here
+
+====================
+
+----- Server ends work: 26.1.26 at 13:44:35. ----- 

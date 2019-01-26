@@ -188,39 +188,36 @@ void MainLoop( int Tempo )
     //Wystartowanie zegara raportowego
     SetTimer( 5, PollTable[TIM_REP].fd );
     
-    int jobs = 0;
     int LastIdx = 0;
     int TempBufferLastIdx = 0;
 
-    printf("Server started!, press any key to quit.\n");
+    printf("Server started!, press 'Enter' button to quit.\n");
     struct pollfd Temp;
     Temp.fd = STDIN_FILENO;
     Temp.events = POLLIN;
-
+    
     while( poll( &Temp, 1, 0 ) == 0 )
     {
 	// Poll na wszystkich deskrypotrach
-	    poll( PollTable, TotalClients+3, -1);	
+	poll( PollTable, TotalClients+3, -1);	
     	
 	// Sprawdzenie zegara produkcja
 	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
-	{
-		LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
-		jobs--;
+	{   
+	    LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
 	} 
 	
 	//Sprawdzenie Nadejscia nowego polczenia
-	if( read( PollTable[ACC_SOCK].fd, fd_buffer, 8) > 0 )
+	if( PollTable[ACC_SOCK].revents == POLLIN )
 	{
-		AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
-		jobs--;
+	    AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
 	}
 	
 	//Sprawdzenie zegara raport
 	if( read( PollTable[TIM_REP].fd, fd_buffer, 8) > 0 )
 	{
-		WriteReport( Report, 0, TotalClients, 3);
-		printf("Clock report written.\n");	    
+	    WriteReport( Report, 0, TotalClients, 3);
+	    printf("Clock report written.\n");
 	}
 	
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
@@ -230,8 +227,9 @@ void MainLoop( int Tempo )
 	    if( PollTable[i].revents == POLLNVAL )
 	    {
 		PollTable[i].events = -1;
+		TotalClients--;
 		//Client idx in InfoTable is swift by 3 from PollTable.
-		WriteReport( Report, i-3, TotalClients, 2); 
+		WriteReport( Report, i-3, TotalClients, 2);
 	    }
 	    else if( read( PollTable[i].fd, fd_buffer, 4) > 0 )
 	    {
@@ -304,6 +302,7 @@ void AcceptAndPlaceInPollTab( int socketFd )
     if( (Client_fd = accept( socketFd, (struct sockaddr*)&Client, &ClientLen)) == -1)
        ERROR("New client acceptance error. ");	
     
+    printf("New Client has come! \n");
     PlaceIntoPollTable( Client_fd );
     PlaceClientInTab( Client, Client_fd );
 }
@@ -419,7 +418,7 @@ void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportT
     CheckTime( &TimMonotonic, CLOCK_MONOTONIC );
     CheckTime( &TimWall, CLOCK_REALTIME );
     
-    fprintf( OutputFile, "%ld [Monotonic]    %ld [RealTime aka WallTime]\n", TimMonotonic.tv_sec+(TimMonotonic.tv_nsec/1000000000), TimWall.tv_sec+(TimWall.tv_nsec/1000000000));
+    fprintf( OutputFile, "\n%ld [Monotonic]    %ld [RealTime aka WallTime]\n", TimMonotonic.tv_sec+(TimMonotonic.tv_nsec/1000000000), TimWall.tv_sec+(TimWall.tv_nsec/1000000000));
    
     switch (ReportType)
     {

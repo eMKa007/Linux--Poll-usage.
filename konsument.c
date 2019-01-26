@@ -42,6 +42,7 @@ void SetTimer( float intervalInSeconds, int fd );
 int CreateTimer( int clockid );
 void CheckTime( struct timespec* TimeStructure, clockid_t ClockType );
 float DeltaT( struct timespec First, struct timespec Secodn );
+unsigned char* ComputeMD5( char* TempBuffer, int len );
 void SleepMe( int Tempo );
 void PrintUsage();
 
@@ -144,11 +145,9 @@ void RunS( int NumberOfPosts, int socket_fd )
     //send first request here?
    
     char* TempBuffer = (char*)calloc(28000, sizeof(char));
-    struct pollfd TimerPoll;
+    struct pollfd TimerPoll, ReadSock;
     TimerPoll.fd = Timer;
     TimerPoll.events = POLLIN;
-
-    struct pollfd ReadSock;
     ReadSock.fd = socket_fd;
     ReadSock.events = POLLIN;
     
@@ -157,22 +156,17 @@ void RunS( int NumberOfPosts, int socket_fd )
     int Incomes = 0;
     int IncomesNeed = NumberOfPosts;
     unsigned long res = 0;
-    while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request every time period.
+    while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request after whole block readed.
     {
-	//If read from TimerDescriptor
 	if( poll( &TimerPoll, 1, 0) )
 	{
 	    CheckTime( &AfterSend, CLOCK_REALTIME );
-	    //Send request;
 	    write( socket_fd, "a", sizeof(char));
 	    NumberOfPosts--;
-
 	}
 
-	//Read from socket descriptor, nieblokujaco.
-	if( poll( &ReadSock, 1, -1) )
+	if( poll( &ReadSock, 1, -1) )	//Blocking till read available.
 	{
-	    //Znacznik Czasu 1. Latency 1. 
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
 	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) < sizeof(TempBuffer))
 	    {
@@ -180,18 +174,10 @@ void RunS( int NumberOfPosts, int socket_fd )
 	    }
 	    else
 	    {
-		//Znacznik Czasu 2.
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
-			
-		//Obliczenie MD5.
-		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
-		MD5_CTX md5;
-		MD5_Init( &md5 );
-		MD5_Update( &md5, TempBuffer, res);
-		MD5_Final( MD5Table, &md5);
-
+		
 		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), 
-			DeltaT( AfterRead, AfterBlock), MD5Table);
+			DeltaT( AfterRead, AfterBlock), ComputeMD5(TempBuffer, res));
 		
 		fflush( Report );
 		Incomes++;
@@ -199,6 +185,16 @@ void RunS( int NumberOfPosts, int socket_fd )
 	    
 	}
     }
+}
+
+unsigned char* ComputeMD5( char* TempBuffer, int len )
+{
+    unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
+    MD5_CTX md5;
+    MD5_Init( &md5 );
+    MD5_Update( &md5, TempBuffer, len);
+    MD5_Final( MD5Table, &md5);
+
 }
 
 float DeltaT( struct timespec First, struct timespec Second )

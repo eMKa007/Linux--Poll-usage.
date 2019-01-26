@@ -1,20 +1,14 @@
-//#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include <stdlib.h>
-//#include <stdio.h>
 #include <unistd.h>
-//#include <time.h>
-//#include <sys/timerfd.h>
 #include <poll.h>
 #include <ctype.h>
 
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
-
 
 #define ERROR(x) do{\
     perror(x);\
@@ -406,37 +400,6 @@ int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int Last
     }
     return 0;
 }
-/*
-int CreateTimer( int clockid )
-{
-    int fd = timerfd_create( clockid, TFD_NONBLOCK);
-    if( fd == -1 )
-	ERROR("Produce Timer create error. ");
-
-    return fd;
-}
-
-void SetTimer( float intervalInSeconds, int fd )
-{
-    struct itimerspec ITimerSpec;
-
-    ITimerSpec.it_interval.tv_sec = (int)intervalInSeconds;
-    ITimerSpec.it_interval.tv_nsec = (intervalInSeconds - (int)intervalInSeconds) * 1000000000;
-    
-    ITimerSpec.it_value.tv_sec = (int)intervalInSeconds;
-    ITimerSpec.it_value.tv_nsec = (intervalInSeconds - (int)intervalInSeconds) * 1000000000;
-
-    int res;
-    if( (res = timerfd_settime( fd, 0, &ITimerSpec, NULL)) == -1)
-	ERROR("Setting Produce Timer error. ");
-}
-
-void CheckTime( struct timespec* TimeStructure, clockid_t ClockType )
-{
-    int res = 0;
-    if( ( res = clock_gettime( ClockType, TimeStructure) ) == -1 )
-	ERROR("clock_gettime() error. ");
-}*/
 
 void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportType )
 {

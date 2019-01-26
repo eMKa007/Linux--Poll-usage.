@@ -42,3 +42,38 @@ Data roll: 5120
 ====================
 
 ----- Server ends work: 26.1.26 at 21:24:27. ----- 
+
+----- Server start running 26.1.26 at 21:27:9. ----- 
+
+34260 [Monotonic]    1548534434 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 1280[B] (0% of capacity).
+Data roll: 5120
+
+====================
+
+34261 [Monotonic]    1548534435 [RealTime aka WallTime]
+New client adress: 32765
+
+====================
+
+34265 [Monotonic]    1548534439 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 2560[B] (0% of capacity).
+Data roll: 5120
+
+====================
+
+34270 [Monotonic]    1548534444 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 3840[B] (0% of capacity).
+Data roll: 5120
+
+====================
+
+34275 [Monotonic]    1548534449 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 5120[B] (0% of capacity).
+Data roll: 5120
+
+====================

@@ -135,9 +135,7 @@ void RunS( int NumberOfPosts, int socket_fd )
     //send first request here?
    
     char* TempBuffer = (char*)calloc(28000, sizeof(char));
-    struct pollfd TimerPoll, ReadSock;
-    TimerPoll.fd = Timer;
-    TimerPoll.events = POLLIN;
+    struct pollfd ReadSock;
     ReadSock.fd = socket_fd;
     ReadSock.events = POLLIN;
     

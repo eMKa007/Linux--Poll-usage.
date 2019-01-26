@@ -10,6 +10,7 @@
 #include <time.h>
 #include <sys/timerfd.h>
 #include <poll.h>
+#include <ctype.h>
 
 #include "RoundBuffer.h"
 
@@ -356,16 +357,27 @@ void OpenFileToWrite()
 
 int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
 {
+    static int Case = 0;
+    static int ToSend = 0;
     int i = 0;
     if( LastIdx )
 	i = LastIdx;
+    
+    if( Case % 2 )
+	ToSend = tolower( (ToSend%26)+65 );
+    else
+	ToSend = (ToSend%26)+65;
 
     while( i < 160 )	//640 bytes
     {
-	if( pushChar( FillBuffer, 'A'  ) == 0 )
+	if( pushChar( FillBuffer, (char)ToSend  ) == 0 )
 	    return i;
 	i++;
     }
+    
+    if( Case % 2) ToSend++;
+    Case++;
+    
     printf("Buffer filled %dx'A'. \n", i);
     return 0; 
 } 

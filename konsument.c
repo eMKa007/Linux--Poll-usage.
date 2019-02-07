@@ -101,7 +101,7 @@ void RunR( int NumberOfPosts, int socket_fd )
     struct timespec AfterSend, AfterRead, AfterBlock;
     //send first request here?
    
-    char* TempBuffer = (char*)calloc(28000, sizeof(char));
+    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
     struct pollfd TimerPoll, ReadSock;
     TimerPoll.fd = Timer;
     TimerPoll.events = POLLIN;
@@ -122,7 +122,7 @@ void RunR( int NumberOfPosts, int socket_fd )
 	if( poll(&ReadSock, 1, 0) )
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) > 0 )
+	    if( (res = read( socket_fd, TempBuffer, 112000/sizeof(char)) ) > 0 )
 	    {
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
 		
@@ -142,7 +142,7 @@ void RunS( int NumberOfPosts, int socket_fd )
     struct timespec AfterSend, AfterRead, AfterBlock;
     //send first request here?
    
-    char* TempBuffer = (char*)calloc(28000, sizeof(char));
+    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
     struct pollfd ReadSock;
     ReadSock.fd = socket_fd;
     ReadSock.events = POLLIN;
@@ -154,13 +154,12 @@ void RunS( int NumberOfPosts, int socket_fd )
     unsigned long res = 0;
     while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request after whole block readed.
     {
-	
 	NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
 	
 	if( poll( &ReadSock, 1, -1) )	//Blocking till read available.
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = read( socket_fd, TempBuffer, sizeof(TempBuffer)) ) < sizeof(TempBuffer))
+	    if( (res = read( socket_fd, TempBuffer, 112000/sizeof(char)) ) < 112000/sizeof(char))
 	    {
 		WriteReport( Report, 3, 0, 0, 0);
 	    }

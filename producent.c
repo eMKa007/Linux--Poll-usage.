@@ -188,7 +188,7 @@ void MainLoop( int Tempo )
 	ERROR("Memory allocation error. MainLoop(). ");
 
     //Wystartowanie zegara produkcyjnego
-    SetTimer( Tempo*60/9600.f, PollTable[TIM_PROD].fd );
+    SetTimer( Tempo*60/960.f, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
     SetTimer( 5, PollTable[TIM_REP].fd );
     
@@ -234,7 +234,7 @@ void MainLoop( int Tempo )
 		readToTempBuffer(TempBuffer); 
 	    
 	    int Client = 0;
-	    if( (Client = popInt( ToSendBuffer )) != 0 )
+	    if( (Client = popInt( &ToSendBuffer )) != 0 )
 	    {
 		//Wysyła dane do klienta. Jednego klienta.
 		int res = 0;
@@ -279,7 +279,7 @@ void FillInSendTable( int i, char* fd_buffer )
     else if( res > 0 )
     {
 	PollTable[i].revents = 0;
- 	pushInt(ToSendBuffer, PollTable[i].fd);
+ 	pushInt(&ToSendBuffer, PollTable[i].fd);
 	printf("\t\tNew order from Client %d, saying \"%s\"\n", PollTable[i].fd, fd_buffer);
     }
 }
@@ -400,7 +400,7 @@ int readToTempBuffer(char* TempBuffer)
     unsigned long i = 0;
     while( i < 112000/sizeof(char) )
     {
-	if( (TempBuffer[i] = popChar( ProduceBuffer ) != '\0' ) )
+	if( (TempBuffer[i] = popChar( &ProduceBuffer ) ) != '\0' ) 
 	{
 	    i++;
 	}

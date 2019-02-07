@@ -134,9 +134,6 @@ void RunR( int NumberOfPosts, int socket_fd )
 		Incomes++;
 	    }
 	}		
-
-	if(!NumberOfPosts)
-	    return;
     }	
 }
 

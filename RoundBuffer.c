@@ -28,7 +28,7 @@ int pushChar( struct BufferChar InputBuffer, char Input)
 	    InputBuffer.Buffer[ InputBuffer.BufferHead ] = Input;
     else
     {
-        InputBuffer.BufferHead = ++InputBuffer.BufferHead % InputBuffer.MaxSize;
+        InputBuffer.BufferHead = (InputBuffer.BufferHead + 1) % InputBuffer.MaxSize;
 	InputBuffer.Buffer[InputBuffer.BufferHead] = Input; 
     }
 
@@ -107,7 +107,7 @@ int pushInt( struct BufferInt InputBuffer, int Input)
 	    InputBuffer.Buffer[ InputBuffer.BufferHead ] = Input;
     else
     {
-        InputBuffer.BufferHead = ++InputBuffer.BufferHead % InputBuffer.MaxSize;
+        InputBuffer.BufferHead = (InputBuffer.BufferHead + 1) % InputBuffer.MaxSize;
 	InputBuffer.Buffer[InputBuffer.BufferHead] = Input; 
     }
 

@@ -48,6 +48,7 @@ void PrepareServer();
 void MainLoop( int Tempo );
 
 // Usage Functions
+void CheckIfLocalhost();
 int FillProduceBuffer( struct BufferChar, int LastIdx );
 int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int LastIdx );
 int CreateAcceptSocket();
@@ -67,8 +68,8 @@ void PrintUsage();
 int main( int argc, char* argv[])
 {
     int Tempo = ReadArguments(argc, argv);
-    PrepareServer();
-    MainLoop( Tempo ); 
+   // PrepareServer();
+   // MainLoop( Tempo ); 
 
     fclose( Report );    
     return 0;
@@ -106,7 +107,31 @@ int ReadArguments( int argc, char* argv[])
 		}
 	    }
 	}
-    
+
+
+
+    //Load Address and Port. 
+    port = strtod( argv[optind], &EndPtr);
+    if( *EndPtr != '\0')	//There is address before. 
+    {
+	int idx = 0;
+	while( argv[optind][idx] != ':' ) {
+	    Addr[idx] = argv[optind][idx];
+	    idx++;
+	}
+
+	Addr[idx] = '\0';
+
+	port = strtod( argv[optind]+idx+1, &EndPtr);
+	if( *EndPtr != '\0') { 
+	    PrintUsage();
+	    ERROR("Invalid internal argument near port number. ");
+	}
+
+	CheckIfLocalhost();
+    }
+
+    /*
     //Load Addr and port. 
     if( *argv[optind] == ':')
     {
@@ -134,10 +159,21 @@ int ReadArguments( int argc, char* argv[])
 	    ERROR("Invalid internal argument. ");
 	}
     }
-
+*/
     printf("Input Arguments: -r %s -t %d %s:%d\n", Path, tempo, Addr, port ); 
     return tempo;
 }
+
+void CheckIfLocalhost()
+{
+    int idx = 0;
+    while( Addr[idx] ) 
+	Addr[idx] = tolower( Addr[idx] );
+    
+    if( strcmp( Addr, "localhost") == 0 )
+	strcpy( Addr, "127.0.0.1\0");
+}
+
 
 void PrepareServer()
 {

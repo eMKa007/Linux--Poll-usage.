@@ -32,13 +32,11 @@ int TotalClients = 0;
 int PollTableSize = 0;
 int PacksSent = 0;
 int PacksGen = 0;
-int ProduceBufferUsage = 0;
-int MaxProduceBufferUsage = 0;
 
 struct pollfd* PollTable;
 struct ClientStr* ClientsInfo; 
-struct BufferChar ProduceBuffer; 
-struct BufferInt ToSendBuffer; 
+struct BufferChar ProduceBuffer = {0, 0, 0, 0, 0}; 
+struct BufferInt ToSendBuffer = {0, 0, 0, 0, 0}; 
 
 FILE* Report;
 
@@ -49,8 +47,8 @@ void MainLoop( int Tempo );
 
 // Usage Functions
 void CheckIfLocalhost();
-int FillProduceBuffer( struct BufferChar, int LastIdx );
-int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int LastIdx );
+int FillProduceBuffer(int LastIdx );
+int readToTempBuffer(char* TempBuffer);
 int CreateAcceptSocket();
 void PlaceIntoPollTable( int ClientFd );
 void FillInSendTable( int i, char* fd_buffer );
@@ -68,8 +66,8 @@ void PrintUsage();
 int main( int argc, char* argv[])
 {
     int Tempo = ReadArguments(argc, argv);
-   // PrepareServer();
-   // MainLoop( Tempo ); 
+    PrepareServer();
+    MainLoop( Tempo ); 
 
     fclose( Report );    
     return 0;
@@ -131,35 +129,6 @@ int ReadArguments( int argc, char* argv[])
 	CheckIfLocalhost();
     }
 
-    /*
-    //Load Addr and port. 
-    if( *argv[optind] == ':')
-    {
-	port = 	strtod( (argv[optind]+1), &EndPtr);
-	if( *EndPtr != '\0')
-	{ 
-	    PrintUsage();
-	    ERROR("Invalid internal argument. ");
-	}
-    }
-    else
-    {
-	int j = 0;
-	while( argv[optind][j] != ':' )
-	{
-	    Addr[j] = argv[optind][j];
-	    j++;
-	}
-	Addr[j] = '\0';
-
-	port = 	strtod( argv[optind]+j+1, &EndPtr);
-	if( *EndPtr != '\0')
-	{ 
-	    PrintUsage();
-	    ERROR("Invalid internal argument. ");
-	}
-    }
-*/
     printf("Input Arguments: -r %s -t %d %s:%d\n", Path, tempo, Addr, port ); 
     return tempo;
 }
@@ -167,8 +136,10 @@ int ReadArguments( int argc, char* argv[])
 void CheckIfLocalhost()
 {
     int idx = 0;
-    while( Addr[idx] ) 
+    while( Addr[idx] ) {
 	Addr[idx] = tolower( Addr[idx] );
+	idx++;
+    }
     
     if( strcmp( Addr, "localhost") == 0 )
 	strcpy( Addr, "127.0.0.1\0");
@@ -177,11 +148,11 @@ void CheckIfLocalhost()
 
 void PrepareServer()
 {
-    ProduceBuffer = CreateRoundBufferChar(1250000/sizeof(char)); 
-    MaxProduceBufferUsage = 1250000; 
+    
+    CreateRoundBufferChar(1250000/sizeof(char), &ProduceBuffer); 
 
     //Utworzenie kolejki cyklicznej ToSend
-    ToSendBuffer = CreateRoundBufferInt(1000);
+    CreateRoundBufferInt(1000, &ToSendBuffer);
     
     //Utworzenie Tablicy dla informacji o klientach.
     ClientsInfo = (struct ClientStr*)calloc(10, sizeof(struct ClientStr));
@@ -217,12 +188,11 @@ void MainLoop( int Tempo )
 	ERROR("Memory allocation error. MainLoop(). ");
 
     //Wystartowanie zegara produkcyjnego
-    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
+    SetTimer( Tempo*60/9600.f, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
     SetTimer( 5, PollTable[TIM_REP].fd );
     
     int LastIdx = 0;
-    int TempBufferLastIdx = 0;
 
     printf("Server started!, press 'Enter' button to quit.\n");
     struct pollfd Temp;
@@ -237,7 +207,7 @@ void MainLoop( int Tempo )
 	// Sprawdzenie zegara produkcja
 	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
 	{   
-	    LastIdx = FillProduceBuffer( ProduceBuffer, LastIdx );
+	    LastIdx = FillProduceBuffer( LastIdx );
 	    PacksGen++;
 	} 
 	
@@ -258,19 +228,28 @@ void MainLoop( int Tempo )
 	}
 
 	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
-	if( ( TempBufferLastIdx = readToTempBuffer( ProduceBuffer, TempBuffer, TempBufferLastIdx)) == 0 )
+	if( (unsigned long)ProduceBuffer.CurrSize >= 112000/sizeof(char) )
 	{
+	    if( TempBuffer[0] == '\0' )
+		readToTempBuffer(TempBuffer); 
+	    
 	    int Client = 0;
 	    if( (Client = popInt( ToSendBuffer )) != 0 )
 	    {
 		//Wysyła dane do klienta. Jednego klienta.
 		int res = 0;
-		if( (res = send( Client, TempBuffer, sizeof(TempBuffer), 0)) == -1)
+		if( (res = send( Client, TempBuffer, 112000, 0)) == -1)
 		    perror("Error sending message to client. ");
-		
+	
+		int i = 0;	
+		while( ClientsInfo[i].ClientFd != Client )
+		    i++;
+
+		ClientsInfo[i].PackagesDelivered++;
 		PacksSent++;	
+		
 		//czyszczenie Bufora.
-		memset( TempBuffer, 0, sizeof(TempBuffer)/sizeof(*TempBuffer) );
+		TempBuffer[0] = '\0'; 
 	    }
 	}
     }
@@ -292,7 +271,6 @@ void FillInSendTable( int i, char* fd_buffer )
     if( PollTable[i].fd > 0 && (res = read( PollTable[i].fd, fd_buffer, 4)) <= 0 
 	    && PollTable[i].revents == 1 )
     {
-	//PollTable[i].revents = 0;
 	printf("\t\tClient %d has closed the connection.\n", PollTable[i].fd);
 	PollTable[i].fd *= -1;
 	TotalClients--;
@@ -388,47 +366,46 @@ void OpenFileToWrite()
 	ERROR("First print error. OpenFileToWrite(). ");
 }
 
-int FillProduceBuffer( struct BufferChar FillBuffer, int LastIdx )
+int FillProduceBuffer( int LastIdx )
 {
     static int Case = 0;
     static int ToSend = 0;
     int Temp;
-    int i = 0;
-    if( LastIdx )
-	i = LastIdx;
-    
+
     if( Case % 2 )
 	Temp = tolower( (ToSend%25)+65 );
     else
 	Temp = (ToSend%26)+65;
 
+    int i = 0;
+    if( LastIdx )
+	i = LastIdx;
+
     while( i < 640 )	//640 bytes
     {
-	if( pushChar( FillBuffer, (char)Temp  ) == 0 )
+	if( pushChar( &ProduceBuffer, (char)Temp  ) == 0 )
 	    return i;
 	i++;
-	ProduceBufferUsage++;
     }
     
-    printf("Buffer filled %dx'%c'. \n", i, (char)Temp);
+    printf("Buffer filled %dx'%c'.\tTotal:%d, Max:%d \n", i, (char)Temp, ProduceBuffer.CurrSize, ProduceBuffer.MaxSize);
     if( Case % 2) ToSend++;
     Case++;
     
     return 0; 
 } 
 
-int readToTempBuffer(struct BufferChar ProduceBuffer, char* TempBuffer, int LastIdx )
+int readToTempBuffer(char* TempBuffer)
 {
     unsigned long i = 0;
-    if( !LastIdx )
-	i = LastIdx;
-    
-    while( i < sizeof(TempBuffer)/sizeof(*TempBuffer) )
+    while( i < 112000/sizeof(char) )
     {
 	if( (TempBuffer[i] = popChar( ProduceBuffer ) != '\0' ) )
-		i++;
+	{
+	    i++;
+	}
 	else
-	    return i;
+	    ERROR("Broken Produce buffer, can't read from it. ");	
     }
     return 0;
 }
@@ -458,9 +435,9 @@ void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportT
 	    {
 		int bytesGen = PacksGen * 640;
 		int bytesSent = PacksSent * 112000;
-		int PercentUsage = ProduceBufferUsage * 100 / MaxProduceBufferUsage;
-		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: %d[B] (%d%% of capacity).\nData roll: %d\n", 
-			TotalClients, ProduceBufferUsage, PercentUsage, bytesGen-bytesSent);
+		int PercentUsage = ProduceBuffer.CurrSize * 100 /ProduceBuffer.MaxSize ;
+		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: %lu[B] (%d%% of capacity).\nData roll: %d\n", 
+			TotalClients, ProduceBuffer.CurrSize*sizeof(char), PercentUsage, bytesGen-bytesSent);
 	    }; break;
     }
 

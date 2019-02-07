@@ -10,8 +10,8 @@ struct BufferChar
     int CurrSize;
 };
 
-struct BufferChar CreateRoundBufferChar(int Size);
-int pushChar( struct BufferChar, char Input);
+void CreateRoundBufferChar(int Size, struct BufferChar* RoundBuffer);
+int pushChar( struct BufferChar*, char Input);
 char popChar( struct BufferChar);
 char tailChar( struct BufferChar);
 char headChar( struct BufferChar);
@@ -28,7 +28,7 @@ struct BufferInt
     int CurrSize;
 };
 
-struct BufferInt CreateRoundBufferInt(int Size);
+void CreateRoundBufferInt(int Size, struct BufferInt* ToSend);
 int pushInt( struct BufferInt, int Input);
 int popInt( struct BufferInt);
 int tailInt( struct BufferInt);

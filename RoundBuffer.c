@@ -1,38 +1,39 @@
 #include "RoundBuffer.h"
 
-struct BufferChar CreateRoundBufferChar( int Size )
+void CreateRoundBufferChar( int Size, struct BufferChar* RoundBuffer )
 {
-   struct BufferChar RoundBuffer;
-   RoundBuffer.BufferHead = 0;
-   RoundBuffer.BufferTail = 0;
-   RoundBuffer.MaxSize = Size;
-   RoundBuffer.CurrSize = 0;
-   RoundBuffer.Buffer = (char*)calloc(RoundBuffer.MaxSize, sizeof(char));
-   if( !RoundBuffer.Buffer )
+   RoundBuffer->BufferHead = 0;
+   RoundBuffer->BufferTail = 0;
+   RoundBuffer->MaxSize = Size;
+   RoundBuffer->CurrSize = 0;
+   RoundBuffer->Buffer = (char*)calloc(Size, sizeof(char));
+   if( !RoundBuffer->Buffer )
    {
 	perror("Buffer allocation error. ");
 	exit(-1);
    }
-
-   return RoundBuffer;
 }
 
-int pushChar( struct BufferChar InputBuffer, char Input)
+int pushChar( struct BufferChar* InputBuffer, char Input)
 {
-    if( InputBuffer.CurrSize == InputBuffer.MaxSize )
+    if( InputBuffer->CurrSize == InputBuffer->MaxSize )
     {
 	return 0;
     }
     
-    if( isEmptyChar( InputBuffer ) )
-	    InputBuffer.Buffer[ InputBuffer.BufferHead ] = Input;
+    if( isEmptyChar( *InputBuffer ) )
+    {
+	InputBuffer->Buffer[ InputBuffer->BufferHead ] = Input;
+	InputBuffer->BufferHead++;
+    }
     else
     {
-        InputBuffer.BufferHead = (InputBuffer.BufferHead + 1) % InputBuffer.MaxSize;
-	InputBuffer.Buffer[InputBuffer.BufferHead] = Input; 
+        InputBuffer->BufferHead++; 
+	InputBuffer->BufferHead = InputBuffer->BufferHead % InputBuffer->MaxSize;
+	InputBuffer->Buffer[InputBuffer->BufferHead] = Input; 
     }
 
-    InputBuffer.CurrSize++;
+    InputBuffer->CurrSize++;
     return 1;
 }
 
@@ -79,21 +80,19 @@ int isEmptyChar( struct BufferChar InputBuffer)
 }
 
 //-----------Round Buffer INT  
-struct BufferInt CreateRoundBufferInt( int Size )
+void CreateRoundBufferInt( int Size, struct BufferInt* RoundBuffer )
 {
-   struct BufferInt RoundBuffer;
-   RoundBuffer.BufferHead = 0;
-   RoundBuffer.BufferTail = 0;
-   RoundBuffer.MaxSize = Size;
-   RoundBuffer.CurrSize = 0;
-   RoundBuffer.Buffer = (int*)calloc(RoundBuffer.MaxSize, sizeof(int));
-   if( !RoundBuffer.Buffer )
+   RoundBuffer->BufferHead = 0;
+   RoundBuffer->BufferTail = 0;
+   RoundBuffer->MaxSize = Size;
+   RoundBuffer->CurrSize = 0;
+   RoundBuffer->Buffer = (int*)calloc(Size, sizeof(int));
+   if( !RoundBuffer->Buffer )
    {
 	perror("Buffer allocation error. ");
 	exit(-1);
    }
 
-   return RoundBuffer;
 }
 
 int pushInt( struct BufferInt InputBuffer, int Input)

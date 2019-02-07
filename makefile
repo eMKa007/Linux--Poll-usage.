@@ -1,4 +1,4 @@
-CFLAGS = -g -Wall 
+CFLAGS = -g -Wall -D_GNU_SOURCE
 CC = gcc
 
 all: RoundBuffer.o TimeFunctions.o producent.o konsument.o

@@ -1,6 +1,6 @@
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
@@ -188,7 +188,7 @@ void MainLoop( int Tempo )
 	ERROR("Memory allocation error. MainLoop(). ");
 
     //Wystartowanie zegara produkcyjnego
-    SetTimer( Tempo*60/960.f, PollTable[TIM_PROD].fd );
+    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
     SetTimer( 5, PollTable[TIM_REP].fd );
     
@@ -248,8 +248,8 @@ void MainLoop( int Tempo )
 		ClientsInfo[i].PackagesDelivered++;
 		PacksSent++;	
 		
-		//czyszczenie Bufora.
-		TempBuffer[0] = '\0'; 
+		if( res != -1 )	    //czyszczenie Bufora jeśli wyslano.
+		    TempBuffer[0] = '\0'; 
 	    }
 	}
     }
@@ -400,12 +400,8 @@ int readToTempBuffer(char* TempBuffer)
     unsigned long i = 0;
     while( i < 112000/sizeof(char) )
     {
-	if( (TempBuffer[i] = popChar( &ProduceBuffer ) ) != '\0' ) 
-	{
-	    i++;
-	}
-	else
-	    ERROR("Broken Produce buffer, can't read from it. ");	
+	TempBuffer[i] = popChar( &ProduceBuffer );
+	i++;
     }
     return 0;
 }

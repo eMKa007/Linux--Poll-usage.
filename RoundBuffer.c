@@ -102,7 +102,10 @@ int pushInt( struct BufferInt* InputBuffer, int Input)
     }
     
     if( isEmptyInt( *InputBuffer ) )
+    {
 	    InputBuffer->Buffer[ InputBuffer->BufferHead ] = Input;
+	    InputBuffer->BufferHead++;
+    }
     else
     {
         InputBuffer->BufferHead = (InputBuffer->BufferHead + 1) % InputBuffer->MaxSize;
@@ -118,7 +121,9 @@ int popInt(struct BufferInt* InputBuffer)
     if( isEmptyInt( *InputBuffer) )
 	return 0;
 
-    int res = InputBuffer->Buffer[InputBuffer->BufferTail++ % InputBuffer->MaxSize ];
+    int res = InputBuffer->Buffer[InputBuffer->BufferTail];
+    InputBuffer->BufferTail++;
+    InputBuffer->BufferTail = InputBuffer->BufferTail % InputBuffer->MaxSize;
     InputBuffer->CurrSize--;
     return res;
 }

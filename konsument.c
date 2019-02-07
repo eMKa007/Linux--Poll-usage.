@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <poll.h>
 #include <openssl/md5.h>
+#include <ctype.h>
 
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
@@ -30,6 +31,7 @@ int SendRequest( struct timespec* After, int socket_fd, int NumberOfPosts);
 void OpenFileToWrite();
 float RandomVal( char* argument );
 unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len );
+void CheckIfLocalHost();
 
 //Output functions
 void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 );
@@ -44,7 +46,7 @@ int main( int argc, char* argv[])
     
     int socket_fd = PrepareClient();
     RunClientRun( NumberOfPosts, socket_fd ); 
-   
+  
     close( socket_fd );
     return 0;
 }
@@ -197,7 +199,7 @@ unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len )
 
 int ReadArguments( int argc, char* argv[])
 {
-    if( argc < 6 )
+    if( argc < 3 )
     {
 	PrintUsage();
     	exit(-1);
@@ -248,36 +250,44 @@ int ReadArguments( int argc, char* argv[])
 	    }
 	}
     
-    //Load Addr and port. 
-    if( *argv[optind] == ':')
+    port = strtod( argv[optind], &EndPtr);
+    if( *EndPtr != '\0' )
     {
-	port = 	strtod( (argv[optind]+1), &EndPtr);
-	if( *EndPtr != '\0')
-	{ 
-	    PrintUsage();
-	    ERROR("Invalid internal argument. ");
-	}
-    }
-    else
-    {
-	int j = 0;
-	while( argv[optind][j] != ':' )
+	int idx = 0;
+	while ( argv[optind][idx] != ':' )
 	{
-	    Addr[j] = argv[optind][j];
-	    j++;
+	    Addr[idx] = argv[optind][idx];
+	    idx++;
 	}
-	Addr[j] = '\0';
 
-	port = 	strtod( argv[optind]+j+1, &EndPtr);
-	if( *EndPtr != '\0')
-	{ 
+	Addr[idx] = '\0';
+
+	port = strtod( argv[optind]+idx+1, &EndPtr);
+	if( *EndPtr != '\0' )
+	{
 	    PrintUsage();
-	    ERROR("Invalid internal argument. ");
+	    ERROR("Invalid internal argument near port number. ");
 	}
+
+	CheckIfLocalHost();
     }
 
     return NumberOfPosts;
 }
+
+void CheckIfLocalHost()
+{
+    int idx = 0;
+    while( Addr[idx] )
+    {
+	Addr[idx] = tolower( Addr[idx] );
+	idx++;
+    }
+    if( strcmp( Addr, "localhost") == 0 )
+	strcpy( Addr, "127.0.0.1\0" );
+
+}
+
 
 float RandomVal( char* argument )
 {
@@ -331,9 +341,9 @@ void OpenFileToWrite()
 	ERROR("Filed to open/create report file. ");
 
     time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
+    struct tm tm1 = *localtime(&t);
     if( fprintf( Report, "\n----- Client start running %d.%d.%d at %d:%d:%d. ----- \n", 
-		tm.tm_mday, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) < 0)
+		tm1.tm_mday, tm1.tm_mon+1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec) < 0)
 	ERROR("First print error. OpenFileToWrite(). ");
 
     fflush(Report);

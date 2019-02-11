@@ -185,7 +185,7 @@ void MainLoop( int Tempo )
 	ERROR("Memory allocation error. MainLoop(). ");
 
     //Wystartowanie zegara produkcyjnego
-    SetTimer( Tempo*60/960.f, PollTable[TIM_PROD].fd );
+    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
     SetTimer( 5, PollTable[TIM_REP].fd );
     
@@ -194,12 +194,14 @@ void MainLoop( int Tempo )
     while( 1 )
     {
 	// Poll na wszystkich deskrypotrach
-	poll( PollTable, PollTableSize, 5000);	
+	poll( PollTable, PollTableSize, 0);	
     	
 	// Sprawdzenie zegara produkcja
-	if( (PollTable[TIM_PROD].revents & POLLIN) != 0 )
+	if( PollTable[TIM_PROD].revents & POLLIN )
 	{
+	    read( PollTable[TIM_PROD].fd, fd_buffer, 8);
 	    LastIdx = FillProduceBuffer( LastIdx );
+	    PollTable[TIM_PROD].revents = 0;
 	    PacksGen++;
 	}
 	
@@ -212,13 +214,20 @@ void MainLoop( int Tempo )
 	*/
 	
 	//Sprawdzenie Nadejscia nowego polczenia
-	if( ( PollTable[ACC_SOCK].revents & POLLIN ) != 0 )
+	if( ( PollTable[ACC_SOCK].revents & POLLIN ) )
+	{
 	    AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
+	    PollTable[ACC_SOCK].revents = 0;
+	}
 	
 	//Sprawdzenie zegara raport
-	if( ( PollTable[TIM_REP].revents & POLLIN ) != 0 )
+	if( ( PollTable[TIM_REP].revents & POLLIN ) )
+	{
+	    read( PollTable[TIM_REP].fd, fd_buffer, 8);
 	    TimeReportAction();
-	
+	    PollTable[TIM_REP].revents = 0;
+	}
+
 	/*
 	if( read( PollTable[TIM_REP].fd, fd_buffer, 8) > 0 )
 	    TimeReportAction();    

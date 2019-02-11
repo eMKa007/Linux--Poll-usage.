@@ -75,10 +75,10 @@ int main( int argc, char* argv[])
 
 int ReadArguments( int argc, char* argv[])
 {
-    if( argc < 6)
+    if( argc < 4 )
     {
 	PrintUsage();
-    	exit(-1);
+	exit(-1);
     }
 
     char* EndPtr;
@@ -105,8 +105,6 @@ int ReadArguments( int argc, char* argv[])
 		}
 	    }
 	}
-
-
 
     //Load Address and Port. 
     port = strtod( argv[optind], &EndPtr);
@@ -145,14 +143,13 @@ void CheckIfLocalhost()
 	strcpy( Addr, "127.0.0.1\0");
 }
 
-
 void PrepareServer()
 {
-    
-    CreateRoundBufferChar(1250000/sizeof(char), &ProduceBuffer); 
+    //Utworzenie kolejki cyklicznej Bufora Produkcyjnego
+    CreateRoundBufferChar( 1.25 * 1024 * 1024, &ProduceBuffer); 
 
     //Utworzenie kolejki cyklicznej ToSend
-    CreateRoundBufferInt(1000, &ToSendBuffer);
+    CreateRoundBufferInt(1024, &ToSendBuffer);
     
     //Utworzenie Tablicy dla informacji o klientach.
     ClientsInfo = (struct ClientStr*)calloc(10, sizeof(struct ClientStr));
@@ -182,43 +179,51 @@ void PrepareServer()
 void MainLoop( int Tempo )
 {
     //Utworzenie Buforu Pomocniczego 
-    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
+    char* TempBuffer = (char*)calloc(112*1024, sizeof(char));
     char* fd_buffer = (char*)calloc(120, sizeof(char));
     if( !TempBuffer || !fd_buffer)
 	ERROR("Memory allocation error. MainLoop(). ");
 
     //Wystartowanie zegara produkcyjnego
-    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
+    SetTimer( Tempo*60/960.f, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
     SetTimer( 5, PollTable[TIM_REP].fd );
     
     int LastIdx = 0;
 
-    printf("Server started!, press 'Enter' button to quit.\n");
-    struct pollfd Temp;
-    Temp.fd = STDIN_FILENO;
-    Temp.events = POLLIN;
-    
-    while( poll( &Temp, 1, 0 ) == 0 )
+    while( 1 )
     {
 	// Poll na wszystkich deskrypotrach
-	poll( PollTable, PollTableSize, 0);	
+	poll( PollTable, PollTableSize, 5000);	
     	
 	// Sprawdzenie zegara produkcja
+	if( (PollTable[TIM_PROD].revents & POLLIN) != 0 )
+	{
+	    LastIdx = FillProduceBuffer( LastIdx );
+	    PacksGen++;
+	}
+	
+	/*
 	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
 	{   
 	    LastIdx = FillProduceBuffer( LastIdx );
 	    PacksGen++;
 	} 
+	*/
 	
 	//Sprawdzenie Nadejscia nowego polczenia
-	if( PollTable[ACC_SOCK].revents == POLLIN )
+	if( ( PollTable[ACC_SOCK].revents & POLLIN ) != 0 )
 	    AcceptAndPlaceInPollTab( PollTable[ACC_SOCK].fd );
 	
 	//Sprawdzenie zegara raport
+	if( ( PollTable[TIM_REP].revents & POLLIN ) != 0 )
+	    TimeReportAction();
+	
+	/*
 	if( read( PollTable[TIM_REP].fd, fd_buffer, 8) > 0 )
 	    TimeReportAction();    
-	
+	*/
+
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
 	long i = 3;
 	while( i < PollTableSize && TotalClients > 0 )
@@ -228,7 +233,7 @@ void MainLoop( int Tempo )
 	}
 
 	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
-	if( (unsigned long)ProduceBuffer.CurrSize >= 112000/sizeof(char) )
+	if( (unsigned long)ProduceBuffer.CurrSize >= 112*1024)
 	{
 	    if( TempBuffer[0] == '\0' )
 		readToTempBuffer(TempBuffer); 
@@ -238,7 +243,7 @@ void MainLoop( int Tempo )
 	    {
 		//Wysyła dane do klienta. Jednego klienta.
 		int res = 0;
-		if( (res = send( Client, TempBuffer, 112000, 0)) == -1)
+		if( (res = send( Client, TempBuffer, 112*1024, 0)) == -1)
 		    perror("Error sending message to client. ");
 	
 		int i = 0;	
@@ -398,7 +403,7 @@ int FillProduceBuffer( int LastIdx )
 int readToTempBuffer(char* TempBuffer)
 {
     unsigned long i = 0;
-    while( i < 112000/sizeof(char) )
+    while( i < 112*1024/sizeof(char) )
     {
 	TempBuffer[i] = popChar( &ProduceBuffer );
 	i++;

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#Clients:
+./Klient -#6 -r3 8000 &
+./Klient -#4 -r2 8000 &
+./Klient -#5 -r4 8000 &
+./Klient -#2 -r5 8000 &
+./Klient -#3 -s2 8000 &
+./Klient -#4 -s3 8000 &
+./Klient -#2 -r3.2 8000 &
+./Klient -#2 -r3.5 8000 &
+./Klient -#2 -r3.7 8000 

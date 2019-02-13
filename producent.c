@@ -210,7 +210,7 @@ void MainLoop( int Tempo )
     while( 1 )
     {
 	// Poll na wszystkich deskrypotrach
-	poll( PollTable, PollTableSize, 0);	
+	poll( PollTable, PollTableSize, -1);	
     	
 	// Sprawdzenie zegara produkcja
 	if( PollTable[TIM_PROD].revents & POLLIN )
@@ -245,7 +245,8 @@ void MainLoop( int Tempo )
 	}
 
 	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
-	if( ProduceBuffer.CurrSize >= 112*1024 )
+	while( ProduceBuffer.CurrSize >=112*1024 && ToSendBuffer.CurrSize > 0 )
+	//if( ProduceBuffer.CurrSize >= 112*1024 )
 	{
 	    int Client = 0;
 	    if( (Client = popInt( &ToSendBuffer )) != 0)

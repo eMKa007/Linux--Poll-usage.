@@ -1,127 +1,624 @@
 
------ Server start running 12.2.12 at 13:8:27. ----- 
+----- Server start running 13.2.13 at 10:38:10. ----- 
 
-13222 [Monotonic]    1549973310 [RealTime aka WallTime]
-New client adress: 16777343
-
-====================
-
-13224 [Monotonic]    1549973312 [RealTime aka WallTime]
-Number of clients connected: 1,
+3857 [Monotonic]    1550050695 [RealTime aka WallTime]
+Number of clients connected: 0,
 Storage usage: 25600[B] (1% of capacity).
 Data roll: 25600
 
 ====================
 
-13229 [Monotonic]    1549973317 [RealTime aka WallTime]
-Number of clients connected: 1,
+----- Server start running 13.2.13 at 10:40:39. ----- 
+
+4006 [Monotonic]    1550050844 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 25600[B] (1% of capacity).
+Data roll: 25600
+
+====================
+
+4011 [Monotonic]    1550050849 [RealTime aka WallTime]
+Number of clients connected: 0,
 Storage usage: 51200[B] (3% of capacity).
 Data roll: 25600
 
 ====================
 
-13234 [Monotonic]    1549973322 [RealTime aka WallTime]
-Number of clients connected: 1,
+4016 [Monotonic]    1550050854 [RealTime aka WallTime]
+Number of clients connected: 0,
 Storage usage: 76800[B] (5% of capacity).
 Data roll: 25600
 
 ====================
 
-13239 [Monotonic]    1549973327 [RealTime aka WallTime]
+4019 [Monotonic]    1550050857 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+4021 [Monotonic]    1550050859 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 102400[B] (7% of capacity).
 Data roll: 25600
 
 ====================
 
-13244 [Monotonic]    1549973332 [RealTime aka WallTime]
+4026 [Monotonic]    1550050864 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 13312[B] (1% of capacity).
 Data roll: -86400
 
 ====================
 
-13249 [Monotonic]    1549973337 [RealTime aka WallTime]
+4031 [Monotonic]    1550050869 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 38912[B] (2% of capacity).
 Data roll: 25600
 
 ====================
 
-13254 [Monotonic]    1549973342 [RealTime aka WallTime]
+4036 [Monotonic]    1550050874 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 64512[B] (4% of capacity).
 Data roll: 25600
 
 ====================
 
-13259 [Monotonic]    1549973347 [RealTime aka WallTime]
+4041 [Monotonic]    1550050879 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 90112[B] (6% of capacity).
 Data roll: 25600
 
 ====================
 
-13264 [Monotonic]    1549973352 [RealTime aka WallTime]
+4046 [Monotonic]    1550050884 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 1024[B] (0% of capacity).
 Data roll: -86400
 
 ====================
 
-13269 [Monotonic]    1549973357 [RealTime aka WallTime]
+4051 [Monotonic]    1550050889 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 26624[B] (2% of capacity).
 Data roll: 25600
 
 ====================
 
-13274 [Monotonic]    1549973362 [RealTime aka WallTime]
+4056 [Monotonic]    1550050894 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 52224[B] (3% of capacity).
 Data roll: 25600
 
 ====================
 
-13279 [Monotonic]    1549973367 [RealTime aka WallTime]
+4061 [Monotonic]    1550050899 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 77824[B] (5% of capacity).
 Data roll: 25600
 
 ====================
 
-13284 [Monotonic]    1549973372 [RealTime aka WallTime]
+4066 [Monotonic]    1550050904 [RealTime aka WallTime]
 Number of clients connected: 1,
 Storage usage: 103424[B] (7% of capacity).
 Data roll: 25600
 
 ====================
 
-13289 [Monotonic]    1549973377 [RealTime aka WallTime]
-Number of clients connected: 1,
-Storage usage: 129024[B] (9% of capacity).
-Data roll: 25600
-
-====================
-
-13294 [Monotonic]    1549973381 [RealTime aka WallTime]
+4068 [Monotonic]    1550050906 [RealTime aka WallTime]
 Client disconnect: 16777343.
-Total packages sent: 2
+Total packages sent: 3
 
 ====================
 
-13294 [Monotonic]    1549973382 [RealTime aka WallTime]
+4071 [Monotonic]    1550050909 [RealTime aka WallTime]
 Number of clients connected: 0,
-Storage usage: 154624[B] (11% of capacity).
+Storage usage: 14336[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+----- Server start running 13.2.13 at 10:41:55. ----- 
+
+4079 [Monotonic]    1550050917 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+4081 [Monotonic]    1550050920 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 25600[B] (1% of capacity).
 Data roll: 25600
 
 ====================
 
------ Server start running 13.2.13 at 10:11:1. ----- 
+4086 [Monotonic]    1550050925 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 51200[B] (3% of capacity).
+Data roll: 25600
 
-2228 [Monotonic]    1550049066 [RealTime aka WallTime]
+====================
+
+4091 [Monotonic]    1550050930 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 76800[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+4096 [Monotonic]    1550050935 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 102400[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+4101 [Monotonic]    1550050940 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 13312[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+4106 [Monotonic]    1550050945 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 38912[B] (2% of capacity).
+Data roll: 25600
+
+====================
+
+4111 [Monotonic]    1550050950 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 64512[B] (4% of capacity).
+Data roll: 25600
+
+====================
+
+4116 [Monotonic]    1550050955 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 90112[B] (6% of capacity).
+Data roll: 25600
+
+====================
+
+4121 [Monotonic]    1550050960 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1024[B] (0% of capacity).
+Data roll: -86400
+
+====================
+
+4126 [Monotonic]    1550050965 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 26624[B] (2% of capacity).
+Data roll: 25600
+
+====================
+
+4131 [Monotonic]    1550050970 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 52224[B] (3% of capacity).
+Data roll: 25600
+
+====================
+
+4136 [Monotonic]    1550050975 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 77824[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+4141 [Monotonic]    1550050980 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 103424[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+4144 [Monotonic]    1550050982 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 3
+
+====================
+
+4146 [Monotonic]    1550050985 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 14336[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+----- Server start running 13.2.13 at 10:45:34. ----- 
+
+4300 [Monotonic]    1550051139 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+4301 [Monotonic]    1550051139 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 25600[B] (1% of capacity).
+Data roll: 25600
+
+====================
+
+4306 [Monotonic]    1550051144 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 51200[B] (3% of capacity).
+Data roll: 25600
+
+====================
+
+4311 [Monotonic]    1550051149 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 76800[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+4316 [Monotonic]    1550051154 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 102400[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+4321 [Monotonic]    1550051159 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 13312[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+4326 [Monotonic]    1550051164 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 38912[B] (2% of capacity).
+Data roll: 25600
+
+====================
+
+4331 [Monotonic]    1550051169 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 64512[B] (4% of capacity).
+Data roll: 25600
+
+====================
+
+4336 [Monotonic]    1550051174 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 90112[B] (6% of capacity).
+Data roll: 25600
+
+====================
+
+4341 [Monotonic]    1550051179 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 115712[B] (8% of capacity).
+Data roll: 25600
+
+====================
+
+4346 [Monotonic]    1550051184 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 141312[B] (10% of capacity).
+Data roll: 25600
+
+====================
+
+4351 [Monotonic]    1550051189 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 166912[B] (12% of capacity).
+Data roll: 25600
+
+====================
+
+4356 [Monotonic]    1550051194 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 192512[B] (14% of capacity).
+Data roll: 25600
+
+====================
+
+4361 [Monotonic]    1550051199 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 218112[B] (16% of capacity).
+Data roll: 25600
+
+====================
+
+4366 [Monotonic]    1550051204 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 243712[B] (18% of capacity).
+Data roll: 25600
+
+====================
+
+4371 [Monotonic]    1550051209 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 269312[B] (20% of capacity).
+Data roll: 25600
+
+====================
+
+4376 [Monotonic]    1550051214 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 294912[B] (22% of capacity).
+Data roll: 25600
+
+====================
+
+4381 [Monotonic]    1550051219 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 320512[B] (24% of capacity).
+Data roll: 25600
+
+====================
+
+4386 [Monotonic]    1550051224 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 346112[B] (26% of capacity).
+Data roll: 25600
+
+====================
+
+4391 [Monotonic]    1550051229 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 371712[B] (28% of capacity).
+Data roll: 25600
+
+====================
+
+4396 [Monotonic]    1550051234 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 397312[B] (30% of capacity).
+Data roll: 25600
+
+====================
+
+4396 [Monotonic]    1550051234 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 1
+
+====================
+
+----- Server start running 13.2.13 at 10:47:40. ----- 
+
+4427 [Monotonic]    1550051265 [RealTime aka WallTime]
 Number of clients connected: 0,
 Storage usage: 25600[B] (1% of capacity).
 Data roll: 25600
+
+====================
+
+4428 [Monotonic]    1550051266 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+4432 [Monotonic]    1550051270 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 51200[B] (3% of capacity).
+Data roll: 25600
+
+====================
+
+4437 [Monotonic]    1550051275 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 76800[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+4442 [Monotonic]    1550051280 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 102400[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+4447 [Monotonic]    1550051285 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 13312[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+4451 [Monotonic]    1550051289 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 1
+
+====================
+
+4452 [Monotonic]    1550051290 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 38912[B] (2% of capacity).
+Data roll: 25600
+
+====================
+
+----- Server start running 13.2.13 at 10:51:36. ----- 
+
+4663 [Monotonic]    1550051501 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 25600[B] (1% of capacity).
+Data roll: 25600
+
+====================
+
+4668 [Monotonic]    1550051506 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 51200[B] (3% of capacity).
+Data roll: 25600
+
+====================
+
+4673 [Monotonic]    1550051511 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 76800[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+4678 [Monotonic]    1550051516 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+4678 [Monotonic]    1550051516 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 102400[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+4683 [Monotonic]    1550051521 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 13312[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+4688 [Monotonic]    1550051526 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 38912[B] (2% of capacity).
+Data roll: 25600
+
+====================
+
+4693 [Monotonic]    1550051531 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 64512[B] (4% of capacity).
+Data roll: 25600
+
+====================
+
+4698 [Monotonic]    1550051536 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 90112[B] (6% of capacity).
+Data roll: 25600
+
+====================
+
+4701 [Monotonic]    1550051539 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 1
+
+====================
+
+4703 [Monotonic]    1550051541 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 1024[B] (0% of capacity).
+Data roll: -86400
+
+====================
+
+4707 [Monotonic]    1550051545 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+4708 [Monotonic]    1550051546 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 26624[B] (2% of capacity).
+Data roll: 25600
+
+====================
+
+4713 [Monotonic]    1550051551 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 52224[B] (3% of capacity).
+Data roll: 25600
+
+====================
+
+4718 [Monotonic]    1550051556 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 77824[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+4723 [Monotonic]    1550051561 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 103424[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+4728 [Monotonic]    1550051566 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 14336[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+4733 [Monotonic]    1550051571 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 39936[B] (3% of capacity).
+Data roll: 25600
+
+====================
+
+4738 [Monotonic]    1550051576 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 65536[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+4743 [Monotonic]    1550051581 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 91136[B] (6% of capacity).
+Data roll: 25600
+
+====================
+
+4748 [Monotonic]    1550051586 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 2048[B] (0% of capacity).
+Data roll: -86400
+
+====================
+
+4753 [Monotonic]    1550051591 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 27648[B] (2% of capacity).
+Data roll: 25600
+
+====================
+
+4758 [Monotonic]    1550051596 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 53248[B] (4% of capacity).
+Data roll: 25600
+
+====================
+
+4763 [Monotonic]    1550051601 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 78848[B] (6% of capacity).
+Data roll: 25600
+
+====================
+
+4768 [Monotonic]    1550051606 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 104448[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+4772 [Monotonic]    1550051610 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 3
+
+====================
+
+4773 [Monotonic]    1550051611 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 15360[B] (1% of capacity).
+Data roll: -86400
 
 ====================

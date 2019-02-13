@@ -130,13 +130,13 @@ void RunR( int NumberOfPosts, int socket_fd )
 	poll( PollTable, 2, -1);
 	
 	if( PollTable[0].revents & POLLIN )
-	    if( NumberOfPosts && read( Timer, TempBuffer, 8) > 0 )
+	    if( NumberOfPosts && (res = read( Timer, TempBuffer, 8)) > 0 )
 		NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
 
 	if( PollTable[1].revents & POLLIN )
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = recv( socket_fd, TempBuffer, 112*1024, MSG_WAITALL)) > 0) //read( socket_fd, TempBuffer, 112*1024) ) > 0 )	 e
+	    if( (res = recv( socket_fd, TempBuffer, 112*1024, MSG_WAITALL)) > 0) //read( socket_fd, TempBuffer, 112*1024) ) > 0 )
 	    {
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
 		
@@ -148,7 +148,7 @@ void RunR( int NumberOfPosts, int socket_fd )
 		    DeltaT( AfterRead, AfterBlock),
 		    ComputeMD5( MD5Table, TempBuffer));
 		
-		printf("Readed block of data. Size: %lu [char], last char: %c\n", res, TempBuffer[res]);	
+		printf("Readed block of data. Size: %lu [char]\n", res);	
 
 		Incomes++;
 	    }
@@ -176,11 +176,8 @@ void RunS( int NumberOfPosts, int socket_fd )
 	if( poll( &ReadSock, 1, -1) )	//Blocking till read available.
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = read( socket_fd, TempBuffer, 112*1024) ) < 112*1024)
-	    {
-		WriteReport( Report, 3, 0, 0, 0);
-	    }
-	    else
+	    if( (res = recv( socket_fd, TempBuffer, 112*1024, MSG_WAITALL)) > 0 )
+			//read( socket_fd, TempBuffer, 112*1024) ) < 112*1024)
 	    {
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
 

@@ -104,11 +104,12 @@ int pushInt( struct BufferInt* InputBuffer, int Input)
     if( isEmptyInt( *InputBuffer ) )
     {
 	    InputBuffer->Buffer[ InputBuffer->BufferHead ] = Input;
-	    InputBuffer->BufferHead++;
+	   // InputBuffer->BufferHead++;
     }
     else
     {
-        InputBuffer->BufferHead = (InputBuffer->BufferHead + 1) % InputBuffer->MaxSize;
+	InputBuffer->BufferHead++;
+        InputBuffer->BufferHead = InputBuffer->BufferHead % InputBuffer->MaxSize;
 	InputBuffer->Buffer[InputBuffer->BufferHead] = Input; 
     }
 

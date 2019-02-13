@@ -622,3 +622,338 @@ Storage usage: 15360[B] (1% of capacity).
 Data roll: -86400
 
 ====================
+
+----- Server start running 13.2.13 at 10:57:3. ----- 
+
+4988 [Monotonic]    1550051826 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+4990 [Monotonic]    1550051828 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 25600[B] (1% of capacity).
+Data roll: 25600
+
+====================
+
+4995 [Monotonic]    1550051833 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 51200[B] (3% of capacity).
+Data roll: 25600
+
+====================
+
+5000 [Monotonic]    1550051838 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 76800[B] (5% of capacity).
+Data roll: 25600
+
+====================
+
+5005 [Monotonic]    1550051843 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 102400[B] (7% of capacity).
+Data roll: 25600
+
+====================
+
+5010 [Monotonic]    1550051848 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 13312[B] (1% of capacity).
+Data roll: -86400
+
+====================
+
+5012 [Monotonic]    1550051850 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 1
+
+====================
+
+----- Server start running 13.2.13 at 10:58:2. ----- 
+
+5049 [Monotonic]    1550051887 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5054 [Monotonic]    1550051892 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5059 [Monotonic]    1550051897 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5064 [Monotonic]    1550051902 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5069 [Monotonic]    1550051907 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5074 [Monotonic]    1550051912 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+5074 [Monotonic]    1550051912 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1280[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5079 [Monotonic]    1550051917 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1280[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5084 [Monotonic]    1550051922 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1920[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5089 [Monotonic]    1550051927 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1920[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5094 [Monotonic]    1550051932 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1920[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5096 [Monotonic]    1550051934 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 0
+
+====================
+
+----- Server start running 13.2.13 at 10:58:58. ----- 
+
+5105 [Monotonic]    1550051943 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+----- Server start running 13.2.13 at 10:59:39. ----- 
+
+5146 [Monotonic]    1550051984 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5151 [Monotonic]    1550051989 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+----- Server start running 13.2.13 at 11:0:22. ----- 
+
+5188 [Monotonic]    1550052026 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+5189 [Monotonic]    1550052027 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5191 [Monotonic]    1550052029 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 0
+
+====================
+
+----- Server start running 13.2.13 at 11:0:39. ----- 
+
+5206 [Monotonic]    1550052044 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5211 [Monotonic]    1550052049 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5214 [Monotonic]    1550052053 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+5216 [Monotonic]    1550052054 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5221 [Monotonic]    1550052059 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5226 [Monotonic]    1550052064 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5231 [Monotonic]    1550052069 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1280[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5236 [Monotonic]    1550052074 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1280[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5241 [Monotonic]    1550052079 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1920[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5246 [Monotonic]    1550052084 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1920[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5251 [Monotonic]    1550052089 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 1920[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5256 [Monotonic]    1550052094 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 2560[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5261 [Monotonic]    1550052099 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 2560[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5266 [Monotonic]    1550052104 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 2560[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5271 [Monotonic]    1550052109 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 3200[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5276 [Monotonic]    1550052114 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 3200[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5276 [Monotonic]    1550052114 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 0
+
+====================
+
+----- Server start running 13.2.13 at 11:5:2. ----- 
+
+5469 [Monotonic]    1550052307 [RealTime aka WallTime]
+New client adress: 16777343
+
+====================
+
+5469 [Monotonic]    1550052307 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5474 [Monotonic]    1550052312 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 0[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5479 [Monotonic]    1550052317 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 640
+
+====================
+
+5484 [Monotonic]    1550052322 [RealTime aka WallTime]
+Number of clients connected: 1,
+Storage usage: 640[B] (0% of capacity).
+Data roll: 0
+
+====================
+
+5486 [Monotonic]    1550052324 [RealTime aka WallTime]
+Client disconnect: 16777343.
+Total packages sent: 0
+
+====================

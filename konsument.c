@@ -131,12 +131,19 @@ void RunR( int NumberOfPosts, int socket_fd )
 	
 	if( PollTable[0].revents & POLLIN )
 	    if( NumberOfPosts && (res = read( Timer, TempBuffer, 8)) > 0 )
+	    {
 		NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
+		PollTable[0].revents = 0;
+
+    		if( !NumberOfPosts )	//Wyłączenie zegarka jeśli wyslane wszystkie. 
+		    PollTable[0].fd *= -1;
+	    }
 
 	if( PollTable[1].revents & POLLIN )
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = recv( socket_fd, TempBuffer, 112*1024, MSG_WAITALL)) > 0) //read( socket_fd, TempBuffer, 112*1024) ) > 0 )
+	    if( (res = recv( socket_fd, TempBuffer, 112*1024, MSG_WAITALL)) > 0) 
+		//read( socket_fd, TempBuffer, 112*1024) ) > 0 )
 	    {
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
 		

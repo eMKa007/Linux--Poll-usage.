@@ -11,7 +11,7 @@
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
 
-#define RATE 60/960.f
+#define RATE 60/9.f
 
 #define ACC_SOCK 0
 #define TIM_PROD 1

@@ -116,3 +116,12 @@ Storage usage: 154624[B] (11% of capacity).
 Data roll: 25600
 
 ====================
+
+----- Server start running 13.2.13 at 10:11:1. ----- 
+
+2228 [Monotonic]    1550049066 [RealTime aka WallTime]
+Number of clients connected: 0,
+Storage usage: 25600[B] (1% of capacity).
+Data roll: 25600
+
+====================

@@ -388,30 +388,25 @@ void OpenFileToWrite()
 
 int FillProduceBuffer( int LastIdx )
 {
-    static int Case = 0;
-    static int ToSend = 0;
-    int Temp;
-
-    if( Case % 2 )
-	Temp = tolower( (ToSend%26)+65 );
-    else
-	Temp = (ToSend%26)+65;
-
+    static int Letter = 65;
+    
+    if( Letter == 91 )
+	Letter = 97;
+    else if ( Letter == 123 )
+	Letter = 65;
+    
     int i = 0;
     if( LastIdx )
 	i = LastIdx;
 
     while( i < 640 )	//640 bytes
     {
-	if( pushChar( &ProduceBuffer, (char)Temp  ) == 0 )
+	if( pushChar( &ProduceBuffer, (char)Letter ) == 0 ) 
 	    return i;
 	i++;
     }
     
-    printf("Buffer filled %dx'%c'.\tTotal:%d, Max:%d \n", i, (char)Temp, ProduceBuffer.CurrSize, ProduceBuffer.MaxSize);
-    
-    if( Case % 2) ToSend++;
-    Case++;
+    Letter++;
     
     return 0; 
 } 

@@ -19,6 +19,9 @@ int Timer;
 
 FILE* Report;
 
+struct pollfd TimerPoll = {0, 0, 0};
+struct pollfd ReadSock = {0, 0, 0};
+
 //In main() functions
 int PrepareClient();
 int ReadArguments( int argc, char* argv[]);
@@ -30,8 +33,9 @@ void RunR( int NumberOfPosts, int socket_fd );
 int SendRequest( struct timespec* After, int socket_fd, int NumberOfPosts);
 void OpenFileToWrite();
 float RandomVal( char* argument );
-unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len );
+unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer);
 void CheckIfLocalHost();
+void PreparePoll( int sock_fd );
 
 //Output functions
 void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latency2, unsigned char* MD5 );
@@ -98,17 +102,23 @@ void RunClientRun( int NumberOfPosts, int socket_fd )
     }
 }
 
+void PreparePoll( int sock_fd )
+{
+    TimerPoll.fd = Timer;
+    TimerPoll.events = POLLIN;
+    
+    ReadSock.fd = sock_fd;
+    ReadSock.events = POLLIN;
+}
+
 void RunR( int NumberOfPosts, int socket_fd )
 {
     struct timespec AfterSend, AfterRead, AfterBlock;
-    //send first request here?
    
-    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
-    struct pollfd TimerPoll, ReadSock;
-    TimerPoll.fd = Timer;
-    TimerPoll.events = POLLIN;
-    ReadSock.fd = socket_fd;
-    ReadSock.events = POLLIN;
+    char* TempBuffer = (char*)calloc(112*1024, sizeof(char));
+    
+    PreparePoll( socket_fd );
+    struct pollfd PollTable[2] = { TimerPoll, ReadSock };
 
     SetTimer( delay, Timer);
 
@@ -117,51 +127,56 @@ void RunR( int NumberOfPosts, int socket_fd )
     unsigned long res = 0;
     while( NumberOfPosts != 0 || Incomes != IncomesNeed  )	//Request every time period.
     {
-	if( poll( &TimerPoll, 1, 0) )
+	poll( PollTable, 2, -1);
+	
+	if( PollTable[0].revents & POLLIN )
 	    if( NumberOfPosts && read( Timer, TempBuffer, 8) > 0 )
 		NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
 
-	if( poll(&ReadSock, 1, 0) )
+	if( PollTable[1].revents & POLLIN )
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = read( socket_fd, TempBuffer, 112000/sizeof(char)) ) > 0 )
+	    if( (res = recv( socket_fd, TempBuffer, 112*1024, MSG_WAITALL)) > 0) //read( socket_fd, TempBuffer, 112*1024) ) > 0 )	 e
 	    {
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
 		
 		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
-		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), 
-		    DeltaT( AfterRead, AfterBlock), 
-		    ComputeMD5( MD5Table, TempBuffer, res));
+		WriteReport( 
+		    Report, 
+		    2, 
+		    DeltaT( AfterSend, AfterRead), 
+		    DeltaT( AfterRead, AfterBlock),
+		    ComputeMD5( MD5Table, TempBuffer));
 		
+		printf("Readed block of data. Size: %lu [char], last char: %c\n", res, TempBuffer[res]);	
+
 		Incomes++;
 	    }
-	}		
+	}
     }	
 }
 
 void RunS( int NumberOfPosts, int socket_fd )
 {
     struct timespec AfterSend, AfterRead, AfterBlock;
-    //send first request here?
    
-    char* TempBuffer = (char*)calloc(112000/sizeof(char), sizeof(char));
-    struct pollfd ReadSock;
-    ReadSock.fd = socket_fd;
-    ReadSock.events = POLLIN;
+    char* TempBuffer = (char*)calloc(112*1024, sizeof(char));
     
-    SetTimer( delay, Timer);
-
+    PreparePoll( socket_fd );    
+    
     int Incomes = 0;
+
     int IncomesNeed = NumberOfPosts;
     unsigned long res = 0;
-    while( NumberOfPosts != 0 || Incomes == IncomesNeed  )	//Request after whole block readed.
+    while( NumberOfPosts != 0 || Incomes != IncomesNeed  )	//Request after whole block readed.
     {
-	NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
+	if( NumberOfPosts > 0 )
+	   NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
 	
 	if( poll( &ReadSock, 1, -1) )	//Blocking till read available.
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
-	    if( (res = read( socket_fd, TempBuffer, 112000/sizeof(char)) ) < 112000/sizeof(char))
+	    if( (res = read( socket_fd, TempBuffer, 112*1024) ) < 112*1024)
 	    {
 		WriteReport( Report, 3, 0, 0, 0);
 	    }
@@ -170,30 +185,40 @@ void RunS( int NumberOfPosts, int socket_fd )
 		CheckTime( &AfterBlock, CLOCK_REALTIME );
 
 		unsigned char MD5Table[MD5_DIGEST_LENGTH] = {0};
-		WriteReport( Report, 2, DeltaT( AfterSend, AfterRead), 
-			DeltaT( AfterRead, AfterBlock), 
-			ComputeMD5( MD5Table, TempBuffer, res));
+		WriteReport( 
+		    Report, 
+		    2, 
+		    DeltaT( AfterSend, AfterRead), 
+		    DeltaT( AfterRead, AfterBlock), 
+		    ComputeMD5( MD5Table, TempBuffer));
+		
+		printf("Readed block of data. Size: %lu [char]\n", res);	
 		
 		Incomes++;
 	    }		
+	    
+	    SetTimer( delay, Timer);
+	    poll( &TimerPoll, 1, -1);
+	    read( Timer, TempBuffer, 8);
 	}
     }
 }
 
 int SendRequest( struct timespec* After, int socket_fd, int NumberOfPosts)
 {
-    write( socket_fd, "PwsL", 4*sizeof(char));
+    write( socket_fd, "PwsL", 4);
     CheckTime( After, CLOCK_REALTIME );
-    printf("Request for data sent. %lu bytes. \n", sizeof(char));
+    printf("Request for data sent. %lu chars. \n", sizeof(char));
     return --NumberOfPosts;
 }
 
-unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer, int len )
+unsigned char* ComputeMD5( unsigned char* MD5Table, char* TempBuffer )
 {
     MD5_CTX md5;
     MD5_Init( &md5 );
-    MD5_Update( &md5, TempBuffer, len);
+    MD5_Update( &md5, TempBuffer, strlen(TempBuffer));
     MD5_Final( MD5Table, &md5);
+    
     return MD5Table;
 }
 
@@ -285,7 +310,6 @@ void CheckIfLocalHost()
     }
     if( strcmp( Addr, "localhost") == 0 )
 	strcpy( Addr, "127.0.0.1\0" );
-
 }
 
 
@@ -367,8 +391,15 @@ void WriteReport( FILE* OutputFile, int ReportType, float Latency1, float Latenc
 	    }; break;
 	case 2: 
 	    {
-		fprintf( OutputFile, "==== BLOCK %d ===\nLatency Request-Answer: %f\nLatency First Byte-Whole Block: %f\nMD5 of block %s\n\n",
-			count, Latency1, Latency2, MD5);
+		fprintf( OutputFile, "==== BLOCK %d ===\nLatency Request-Answer: %f\nLatency First Byte-Whole Block: %f\nMD5 of block: ",
+			count, Latency1, Latency2);
+		
+		for(int i=0; i <MD5_DIGEST_LENGTH; i++) 
+		{
+	            fprintf(OutputFile, "%02x",MD5[i]);
+		}
+
+		fprintf( OutputFile, "\n\n" );
 		count++;
 	    }; break;
 	case 3:

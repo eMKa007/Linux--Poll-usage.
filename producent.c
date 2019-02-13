@@ -11,6 +11,8 @@
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
 
+#define RATE 60/960.f
+
 #define ACC_SOCK 0
 #define TIM_PROD 1
 #define TIM_REP 2
@@ -111,12 +113,18 @@ int ReadArguments( int argc, char* argv[])
     if( *EndPtr != '\0')	//There is address before. 
     {
 	int idx = 0;
-	while( argv[optind][idx] != ':' ) {
+	while( argv[optind][idx] != ':' && idx < (int)strlen( argv[optind]) ) {
 	    Addr[idx] = argv[optind][idx];
 	    idx++;
 	}
-
-	Addr[idx] = '\0';
+	
+	if( argv[optind][idx] == ':' )
+		Addr[idx] = '\0';
+	else
+	{
+	    PrintUsage();
+		exit(-1);
+	}
 
 	port = strtod( argv[optind]+idx+1, &EndPtr);
 	if( *EndPtr != '\0') { 
@@ -127,6 +135,12 @@ int ReadArguments( int argc, char* argv[])
 	CheckIfLocalhost();
     }
 
+    if( port == 0 )
+    {	
+	PrintUsage();
+	exit(-1);
+    }
+    
     printf("Input Arguments: -r %s -t %d %s:%d\n", Path, tempo, Addr, port ); 
     return tempo;
 }
@@ -140,6 +154,8 @@ void CheckIfLocalhost()
     }
     
     if( strcmp( Addr, "localhost") == 0 )
+	strcpy( Addr, "127.0.0.1\0");
+    else if ( Addr[0] == '\0' )
 	strcpy( Addr, "127.0.0.1\0");
 }
 
@@ -185,7 +201,7 @@ void MainLoop( int Tempo )
 	ERROR("Memory allocation error. MainLoop(). ");
 
     //Wystartowanie zegara produkcyjnego
-    SetTimer( Tempo*60/96.f, PollTable[TIM_PROD].fd );
+    SetTimer( Tempo*RATE, PollTable[TIM_PROD].fd );
     //Wystartowanie zegara raportowego
     SetTimer( 5, PollTable[TIM_REP].fd );
     
@@ -205,14 +221,6 @@ void MainLoop( int Tempo )
 	    PacksGen++;
 	}
 	
-	/*
-	if( read( PollTable[TIM_PROD].fd, fd_buffer, 8) > 0 )
-	{   
-	    LastIdx = FillProduceBuffer( LastIdx );
-	    PacksGen++;
-	} 
-	*/
-	
 	//Sprawdzenie Nadejscia nowego polczenia
 	if( ( PollTable[ACC_SOCK].revents & POLLIN ) )
 	{
@@ -228,32 +236,30 @@ void MainLoop( int Tempo )
 	    PollTable[TIM_REP].revents = 0;
 	}
 
-	/*
-	if( read( PollTable[TIM_REP].fd, fd_buffer, 8) > 0 )
-	    TimeReportAction();    
-	*/
-
 	//Sprawdzenie deskryptorów Klientów- wypelnianie tablicy zamówień.
 	long i = 3;
-	while( i < PollTableSize && TotalClients > 0 )
+	while( TotalClients > 0 && i < PollTableSize)
 	{
 	    FillInSendTable( i, fd_buffer); 
 	    i++;	    
 	}
 
 	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
-	if( (unsigned long)ProduceBuffer.CurrSize >= 112*1024)
+	if( ProduceBuffer.CurrSize >= 112*1024 )
 	{
-	    if( TempBuffer[0] == '\0' )
-		readToTempBuffer(TempBuffer); 
-	    
 	    int Client = 0;
-	    if( (Client = popInt( &ToSendBuffer )) != 0 )
-	    {
+	    if( (Client = popInt( &ToSendBuffer )) != 0)
+	    {	
+		//Pobiera dane z Buffora
+		if( TempBuffer[0] == '\0' )
+		    readToTempBuffer(TempBuffer); 
+	    
 		//Wysyła dane do klienta. Jednego klienta.
 		int res = 0;
 		if( (res = send( Client, TempBuffer, 112*1024, 0)) == -1)
 		    perror("Error sending message to client. ");
+		else
+		    printf("Data sent to Client %d, size = %d [char]\n", Client, res);
 	
 		int i = 0;	
 		while( ClientsInfo[i].ClientFd != Client )
@@ -282,15 +288,15 @@ void TimeReportAction()
 void FillInSendTable( int i, char* fd_buffer )
 {
     int res = 0;
-    if( PollTable[i].fd > 0 && (res = read( PollTable[i].fd, fd_buffer, 4)) <= 0 
-	    && PollTable[i].revents == 1 )
+    if( PollTable[i].fd > 0 && (PollTable[i].revents & POLLIN)
+	    && (res = read( PollTable[i].fd, fd_buffer, 4)) <= 0 )
     {
 	printf("\t\tClient %d has closed the connection.\n", PollTable[i].fd);
 	PollTable[i].fd *= -1;
 	TotalClients--;
 	WriteReport( Report, i-3, TotalClients, 2);
     }
-    else if( res > 0 )
+    else if( res == 4 )
     {
 	PollTable[i].revents = 0;
  	pushInt(&ToSendBuffer, PollTable[i].fd);
@@ -328,7 +334,7 @@ int CreateAcceptSocket()
 
 void AcceptAndPlaceInPollTab( int socketFd )
 {
-    //Kod odpowiedzialny za powstanie nowego socketu do klienta.
+    //Powstanie nowego socketu do klienta.
     struct sockaddr_in Client;
     socklen_t ClientLen;
     int Client_fd;
@@ -387,7 +393,7 @@ int FillProduceBuffer( int LastIdx )
     int Temp;
 
     if( Case % 2 )
-	Temp = tolower( (ToSend%25)+65 );
+	Temp = tolower( (ToSend%26)+65 );
     else
 	Temp = (ToSend%26)+65;
 
@@ -403,6 +409,7 @@ int FillProduceBuffer( int LastIdx )
     }
     
     printf("Buffer filled %dx'%c'.\tTotal:%d, Max:%d \n", i, (char)Temp, ProduceBuffer.CurrSize, ProduceBuffer.MaxSize);
+    
     if( Case % 2) ToSend++;
     Case++;
     
@@ -412,7 +419,7 @@ int FillProduceBuffer( int LastIdx )
 int readToTempBuffer(char* TempBuffer)
 {
     unsigned long i = 0;
-    while( i < 112*1024/sizeof(char) )
+    while( i < 112*1024 )
     {
 	TempBuffer[i] = popChar( &ProduceBuffer );
 	i++;
@@ -449,6 +456,10 @@ void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportT
 		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: %lu[B] (%d%% of capacity).\nData roll: %d\n", 
 			TotalClients, ProduceBuffer.CurrSize*sizeof(char), PercentUsage, bytesGen-bytesSent);
 	    }; break;
+	case 4:
+	    {
+		fprintf( OutputFile, "Client %d sent less than 4 bytes. His message was ignored.\n", ClientIdx);
+	    }
     }
 
     fprintf(OutputFile, "\n====================\n");
@@ -467,5 +478,5 @@ void FinalReport()
 
 void PrintUsage()
 {
-	printf("Producent -r <path> -t <val> [<addr>:]port\n\nUsage:\n\t\t<path>  - localization of report file,\n\t\t<val>  -  producing data rate (1-8 second * 60 / 96)[s]\n\t\t[<addr>:]port  -  server localization. Suggested:  \":8000\"\n\n");
+	printf("Producent -r <path> -t <val> [<addr>:]port\n\nUsage:\n\t\t<path>  - localization of report file,\n\t\t<val>  -  producing data rate (1-8 second * 60 / 96)[s]\n\t\t[<addr>:]port  -  server localization. Suggested:  \"8000\"\n\n");
 }

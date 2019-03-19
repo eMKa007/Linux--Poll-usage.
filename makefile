@@ -2,8 +2,8 @@ CFLAGS = -g -Wall -D_GNU_SOURCE
 CC = gcc
 
 all: RoundBuffer.o TimeFunctions.o producent.o konsument.o
-	$(CC) $(CFLAGS) RoundBuffer.o TimeFunctions.o producent.o -o Serwer
-	$(CC) $(CFLAGS) RoundBuffer.o TimeFunctions.o konsument.o -lcrypto -lssl -o Klient
+	$(CC) $(CFLAGS) RoundBuffer.o TimeFunctions.o producent.o -o Serwer.out
+	$(CC) $(CFLAGS) RoundBuffer.o TimeFunctions.o konsument.o -lcrypto -lssl -o Klient.out
 
 RoundBuffer.o: RoundBuffer.c RoundBuffer.h
 	$(CC) $(CFLAGS) RoundBuffer.c -c -o RoundBuffer.o

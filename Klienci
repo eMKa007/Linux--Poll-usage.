@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#Clients:
-./Klient -#6 -r3 8000 &
-./Klient -#4 -r2 8000 &
-./Klient -#5 -r4 8000 &
-./Klient -#2 -r5 8000 &
-./Klient -#3 -s2 8000 &
-./Klient -#4 -s3 8000 &
-./Klient -#2 -r3.2 8000 &
-./Klient -#2 -r3.5 8000 &
-./Klient -#2 -r3.7 8000 
+# Run Clients:
+./Klient.out -# 4 -r 1.5 12345 &
+./Klient.out -# 3 -r .3 12345 &
+./Klient.out -# 5 -r 1.5 127.0.0.1:12345 &
+./Klient.out -#5 -r 1.5 localhost:12345 & 
+./Klient.out -#3 -s2 LOCALHOST:12345 &
+./Klient.out -#4 -s3 LoCaLHOST:12345 &
+./Klient.out -#2 -r3.2 :12345 &
+./Klient.out -#2 -r3.5 :12345 &
+./Klient.out -#2 -r3.7 12345 

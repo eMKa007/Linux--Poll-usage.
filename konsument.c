@@ -81,6 +81,8 @@ int PrepareClient()
     }
     OpenFileToWrite();
     
+    printf("Report file created. \n"); 
+
     Timer = CreateTimer( CLOCK_REALTIME );
 
     return sock_fd;
@@ -113,8 +115,8 @@ void PreparePoll( int sock_fd )
 
 void RunR( int NumberOfPosts, int socket_fd )
 {
-    struct timespec AfterSend, AfterRead, AfterBlock;
-   
+    struct timespec AfterSend[NumberOfPosts];
+    struct timespec AfterRead, AfterBlock; 
     char* TempBuffer = (char*)calloc(112*1024, sizeof(char));
     
     PreparePoll( socket_fd );
@@ -125,6 +127,7 @@ void RunR( int NumberOfPosts, int socket_fd )
     int Incomes = 0;
     int IncomesNeed = NumberOfPosts;
     unsigned long res = 0;
+    int RequestNo = 0;
     while( NumberOfPosts != 0 || Incomes != IncomesNeed  )	//Request every time period.
     {
 	poll( PollTable, 2, -1);
@@ -132,8 +135,9 @@ void RunR( int NumberOfPosts, int socket_fd )
 	if( PollTable[0].revents & POLLIN )
 	    if( NumberOfPosts && (res = read( Timer, TempBuffer, 8)) > 0 )
 	    {
-		NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
+		NumberOfPosts = SendRequest( &AfterSend[RequestNo], socket_fd, NumberOfPosts);	
 		PollTable[0].revents = 0;
+		RequestNo++;
 
     		if( !NumberOfPosts )	//Wyłączenie zegarka jeśli wyslane wszystkie. 
 		    PollTable[0].fd *= -1;
@@ -151,7 +155,7 @@ void RunR( int NumberOfPosts, int socket_fd )
 		WriteReport( 
 		    Report, 
 		    2, 
-		    DeltaT( AfterSend, AfterRead), 
+		    DeltaT( AfterSend[Incomes], AfterRead), 
 		    DeltaT( AfterRead, AfterBlock),
 		    ComputeMD5( MD5Table, TempBuffer));
 		
@@ -179,7 +183,7 @@ void RunS( int NumberOfPosts, int socket_fd )
     {
 	if( NumberOfPosts > 0 )
 	   NumberOfPosts = SendRequest( &AfterSend, socket_fd, NumberOfPosts);	
-	
+	   
 	if( poll( &ReadSock, 1, -1) )	//Blocking till read available.
 	{
 	    CheckTime( &AfterRead, CLOCK_REALTIME );
@@ -212,7 +216,7 @@ int SendRequest( struct timespec* After, int socket_fd, int NumberOfPosts)
 {
     write( socket_fd, "PwsL", 4);
     CheckTime( After, CLOCK_REALTIME );
-    printf("Request for data sent. %lu chars. \n", sizeof(char));
+    printf("Request for data sent. %lu chars. \n", 4*sizeof(char));
     return --NumberOfPosts;
 }
 
@@ -283,13 +287,19 @@ int ReadArguments( int argc, char* argv[])
     if( *EndPtr != '\0' )
     {
 	int idx = 0;
-	while ( argv[optind][idx] != ':' )
+	while ( argv[optind][idx] != ':' && idx < (int)strlen( argv[optind] ) )
 	{
 	    Addr[idx] = argv[optind][idx];
 	    idx++;
 	}
 
-	Addr[idx] = '\0';
+	if( argv[optind][idx] == ':' )
+	   Addr[idx] = '\0';
+	else
+	{
+	    PrintUsage();
+	    exit(-1);
+	}
 
 	port = strtod( argv[optind]+idx+1, &EndPtr);
 	if( *EndPtr != '\0' )
@@ -299,6 +309,12 @@ int ReadArguments( int argc, char* argv[])
 	}
 
 	CheckIfLocalHost();
+    }
+
+    if( port == 0 )
+    {
+	PrintUsage();
+	exit(-1);
     }
 
     return NumberOfPosts;
@@ -312,7 +328,10 @@ void CheckIfLocalHost()
 	Addr[idx] = tolower( Addr[idx] );
 	idx++;
     }
+
     if( strcmp( Addr, "localhost") == 0 )
+	strcpy( Addr, "127.0.0.1\0" );
+    else if ( Addr[0] == '\0' )
 	strcpy( Addr, "127.0.0.1\0" );
 }
 
@@ -359,7 +378,7 @@ float RandomVal( char* argument )
 
 void OpenFileToWrite()
 {
-    char Path[] = "Report_Client";
+    char Path[80] = "Report_Client";
     char pid[80] = {0};
     sprintf(pid, "%d", getpid());
     strcat(Path, pid);

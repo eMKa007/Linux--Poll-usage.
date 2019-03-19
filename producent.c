@@ -11,7 +11,7 @@
 #include "RoundBuffer.h"
 #include "TimeFunctions.h"
 
-#define RATE 60/9.f
+#define RATE 60/9600.f
 
 #define ACC_SOCK 0
 #define TIM_PROD 1
@@ -108,7 +108,13 @@ int ReadArguments( int argc, char* argv[])
 	    }
 	}
 
-    //Load Address and Port. 
+    //Load Address and Port.
+    if( optind >= argc )
+    {
+	PrintUsage();
+	exit(-1);
+    }	
+
     port = strtod( argv[optind], &EndPtr);
     if( *EndPtr != '\0')	//There is address before. 
     {
@@ -245,12 +251,12 @@ void MainLoop( int Tempo )
 	}
 
 	//Sprawdzenie, czy w TempBuffer są wszystkie dane do wysylki.
-	while( ProduceBuffer.CurrSize >=112*1024 && ToSendBuffer.CurrSize > 0 )
-	//if( ProduceBuffer.CurrSize >= 112*1024 )
+	while( ProduceBuffer.CurrSize >= 112*1024 && ToSendBuffer.CurrSize > 0 )
 	{
 	    int Client = 0;
-	    if( (Client = popInt( &ToSendBuffer )) != 0)
-	    {	
+	    //if( (Client = popInt( &ToSendBuffer )) != 0)
+	    //{
+	    Client = popInt( &ToSendBuffer );	
 		//Pobiera dane z Buffora
 		if( TempBuffer[0] == '\0' )
 		    readToTempBuffer(TempBuffer); 
@@ -271,7 +277,7 @@ void MainLoop( int Tempo )
 		
 		if( res != -1 )	    //czyszczenie Bufora jeśli wyslano.
 		    TempBuffer[0] = '\0'; 
-	    }
+	   // }
 	}
     }
 
@@ -447,7 +453,7 @@ void WriteReport( FILE* OutputFile, int ClientIdx, int TotalClients, int ReportT
 	case 3: 
 	    {
 		int bytesGen = PacksGen * 640;
-		int bytesSent = PacksSent * 112000;
+		int bytesSent = PacksSent * 112*1024;
 		int PercentUsage = ProduceBuffer.CurrSize * 100 /ProduceBuffer.MaxSize ;
 		fprintf( OutputFile, "Number of clients connected: %d,\nStorage usage: %lu[B] (%d%% of capacity).\nData roll: %d\n", 
 			TotalClients, ProduceBuffer.CurrSize*sizeof(char), PercentUsage, bytesGen-bytesSent);

@@ -122,6 +122,12 @@ int popInt(struct BufferInt* InputBuffer)
     if( isEmptyInt( *InputBuffer) )
 	return 0;
 
+    if( InputBuffer->CurrSize == 1 )
+    {
+	InputBuffer->CurrSize--;
+	return InputBuffer->Buffer[InputBuffer->BufferTail];
+    }
+
     int res = InputBuffer->Buffer[InputBuffer->BufferTail];
     InputBuffer->BufferTail++;
     InputBuffer->BufferTail = InputBuffer->BufferTail % InputBuffer->MaxSize;
